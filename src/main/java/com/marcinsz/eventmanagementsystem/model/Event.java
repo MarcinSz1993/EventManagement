@@ -15,29 +15,18 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String eventName;
-
     private String eventDescription;
-
     private String location;
-
     private int maxAttendees;
-
     private LocalDate eventDate;
-
     @Enumerated(value = EnumType.STRING)
     private EventStatus eventStatus;
-
     private double ticketPrice;
-
     @Enumerated(value = EnumType.STRING)
     private EventType eventType;
-
     private LocalDateTime createdDate;
-
     private LocalDateTime modifiedDate;
-
 
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinTable(
@@ -50,5 +39,4 @@ public class Event {
             }
     )
     private List<User> users;
-
 }
