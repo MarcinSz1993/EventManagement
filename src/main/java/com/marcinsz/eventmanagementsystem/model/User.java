@@ -15,28 +15,20 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
-
     private String firstName;
-
     private String lastName;
-
     @Column(unique = true)
     private String email;
-
     private String password;
-
     private LocalDate birthDate;
-
     @Enumerated(value = EnumType.STRING)
     private Role role;
-
     @Column(unique = true)
     private String phoneNumber;
-
     @Column(unique = true)
     private String accountNumber;
-
     private String accountStatus;
 
 

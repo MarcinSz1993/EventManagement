@@ -1,9 +1,13 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/EventManagementDB
     username: postgres
     password: qwerty
     driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
 
   jpa:
     hibernate:
@@ -15,6 +19,3 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-  liquibase:
-    change-log: classpath:db/changelog/changelog-master.xml
-    enabled: true
