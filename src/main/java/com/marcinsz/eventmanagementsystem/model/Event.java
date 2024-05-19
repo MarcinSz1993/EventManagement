@@ -28,20 +28,6 @@ public class Event {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
-    public Event(String eventName, String eventDescription, String location, int maxAttendees, LocalDate eventDate, EventStatus eventStatus, double ticketPrice, EventType eventType, LocalDateTime createdDate, LocalDateTime modifiedDate, List<User> users) {
-        this.eventName = eventName;
-        this.eventDescription = eventDescription;
-        this.location = location;
-        this.maxAttendees = maxAttendees;
-        this.eventDate = eventDate;
-        this.eventStatus = eventStatus;
-        this.ticketPrice = ticketPrice;
-        this.eventType = eventType;
-        this.createdDate = createdDate;
-        this.modifiedDate = modifiedDate;
-        this.users = users;
-    }
-
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_events",
@@ -53,6 +39,29 @@ public class Event {
             }
     )
     private List<User> users;
+
+    @ManyToOne
+    @JoinColumn(name = "organizer_id")
+    private User organizer;
+
+
+    public Event(String eventName, String eventDescription, String location,
+                 int maxAttendees, LocalDate eventDate, EventStatus eventStatus,
+                 double ticketPrice, EventType eventType, LocalDateTime createdDate,
+                 LocalDateTime modifiedDate, List<User> users,User organizer) {
+        this.eventName = eventName;
+        this.eventDescription = eventDescription;
+        this.location = location;
+        this.maxAttendees = maxAttendees;
+        this.eventDate = eventDate;
+        this.eventStatus = eventStatus;
+        this.ticketPrice = ticketPrice;
+        this.eventType = eventType;
+        this.createdDate = createdDate;
+        this.modifiedDate = modifiedDate;
+        this.users = users;
+        this.organizer = organizer;
+    }
 
 
 }

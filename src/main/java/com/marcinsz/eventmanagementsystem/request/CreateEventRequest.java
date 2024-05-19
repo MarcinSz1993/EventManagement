@@ -1,6 +1,7 @@
 package com.marcinsz.eventmanagementsystem.request;
 
 import com.marcinsz.eventmanagementsystem.model.EventType;
+import com.marcinsz.eventmanagementsystem.model.User;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,4 +29,5 @@ public class CreateEventRequest {
     private double ticketPrice;
     @NotNull
     private EventType eventType;
+    private User organizer;
 }

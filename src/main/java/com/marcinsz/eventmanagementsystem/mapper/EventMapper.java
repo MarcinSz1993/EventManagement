@@ -37,6 +37,7 @@ public class EventMapper {
                 createEventRequest.getEventType(),
                 LocalDateTime.now(),
                 null,
-                null);
+                null,
+                createEventRequest.getOrganizer());
     }
 }
