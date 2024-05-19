@@ -37,4 +37,19 @@ public class User {
 
     @OneToMany(mappedBy = "organizer")
     private List<Event> organizedEvents;
+
+    public User(String firstName, String lastName, String email,
+                String password, LocalDate birthDate, Role role,
+                String phoneNumber, String accountNumber,
+                String accountStatus) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.birthDate = birthDate;
+        this.role = role;
+        this.phoneNumber = phoneNumber;
+        this.accountNumber = accountNumber;
+        this.accountStatus = accountStatus;
+    }
 }

@@ -5,6 +5,7 @@ import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
 
+    @Transactional
     public EventDto createEvent(CreateEventRequest createEventRequest){
         Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
         eventRepository.save(event);
