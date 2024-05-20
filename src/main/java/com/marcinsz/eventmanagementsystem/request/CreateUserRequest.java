@@ -20,6 +20,9 @@ public class CreateUserRequest {
     @NotBlank
     private String email;
     @NotBlank
+    @Length(min = 5,max = 10)
+    private String username;
+    @NotBlank
     @Length(min = 5)
     private String password;
     @Past
