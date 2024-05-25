@@ -1,5 +1,6 @@
 package com.marcinsz.eventmanagementsystem.mapper;
 
+import com.marcinsz.eventmanagementsystem.dto.OrganiserDto;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.model.Role;
 import com.marcinsz.eventmanagementsystem.model.User;
@@ -35,5 +36,15 @@ public class UserMapper {
                 createUserRequest.getPhoneNumber(),
                 createUserRequest.getAccountNumber(),
                 "ACTIVE");
+    }
+
+    public static OrganiserDto convertUserToOrganiserDto(User user){
+        return new OrganiserDto(user.getFirstName(),
+                user.getLastName(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhoneNumber()
+
+        );
     }
 }

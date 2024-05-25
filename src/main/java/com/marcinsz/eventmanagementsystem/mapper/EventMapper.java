@@ -23,7 +23,7 @@ public class EventMapper {
                 event.getTicketPrice(),
                 event.getEventType(),
                 event.getCreatedDate(),
-                event.getOrganizer()
+                UserMapper.convertUserToOrganiserDto(event.getOrganizer())
         );
     }
 
