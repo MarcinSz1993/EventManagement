@@ -25,7 +25,7 @@ public class CreateEventRequest {
     private int maxAttendees;
     @FutureOrPresent
     private LocalDate eventDate;
-    @Positive
+    @PositiveOrZero
     private double ticketPrice;
     @NotNull
     private EventType eventType;
