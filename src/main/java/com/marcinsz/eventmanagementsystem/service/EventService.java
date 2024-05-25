@@ -40,9 +40,10 @@ public class EventService {
         User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow();
         if(foundEvent.getParticipants().contains(user)){
             throw new IllegalArgumentException("You already joined to this event!");
+        } else if (foundEvent.getParticipants().size() >= foundEvent.getMaxAttendees()) {
+            throw new IllegalArgumentException("Sorry, this event is full.");
         }
         foundEvent.getParticipants().add(user);
         eventRepository.save(foundEvent);
-        EventMapper.convertEventToEventDto(foundEvent);
     }
 }
