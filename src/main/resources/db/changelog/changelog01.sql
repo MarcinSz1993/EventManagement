@@ -42,7 +42,7 @@ create table if not exists event
 );
 
 
-create table if not exists users_events
+create table if not exists participants_events
 (
     event_id bigint not null
         constraint fk33x5do29tl4e7wop9yror0uck

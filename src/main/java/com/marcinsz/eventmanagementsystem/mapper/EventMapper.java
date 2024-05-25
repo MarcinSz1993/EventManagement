@@ -22,7 +22,8 @@ public class EventMapper {
                 event.getEventStatus(),
                 event.getTicketPrice(),
                 event.getEventType(),
-                event.getCreatedDate()
+                event.getCreatedDate(),
+                event.getOrganizer()
         );
     }
 
@@ -38,6 +39,6 @@ public class EventMapper {
                 LocalDateTime.now(),
                 null,
                 null,
-                createEventRequest.getOrganizer());
+                null);
     }
 }

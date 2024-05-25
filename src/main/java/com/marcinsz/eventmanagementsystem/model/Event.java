@@ -1,5 +1,6 @@
 package com.marcinsz.eventmanagementsystem.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -30,7 +31,7 @@ public class Event {
 
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinTable(
-            name = "users_events",
+            name = "participants_events",
             joinColumns = {
                     @JoinColumn(name = "event_id")
             },
@@ -38,17 +39,18 @@ public class Event {
                     @JoinColumn(name = "user_id")
             }
     )
-    private List<User> users;
+    private List<User> participants;
 
     @ManyToOne
     @JoinColumn(name = "organizer_id")
+    @JsonBackReference
     private User organizer;
 
 
     public Event(String eventName, String eventDescription, String location,
                  int maxAttendees, LocalDate eventDate, EventStatus eventStatus,
                  double ticketPrice, EventType eventType, LocalDateTime createdDate,
-                 LocalDateTime modifiedDate, List<User> users,User organizer) {
+                 LocalDateTime modifiedDate, List<User> participants,User organizer) {
         this.eventName = eventName;
         this.eventDescription = eventDescription;
         this.location = location;
@@ -59,7 +61,7 @@ public class Event {
         this.eventType = eventType;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
-        this.users = users;
+        this.participants = participants;
         this.organizer = organizer;
     }
 
