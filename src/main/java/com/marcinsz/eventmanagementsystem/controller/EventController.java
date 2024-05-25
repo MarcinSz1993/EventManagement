@@ -5,10 +5,12 @@ import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
+import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.service.EventService;
 import com.marcinsz.eventmanagementsystem.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,5 +37,10 @@ public class EventController {
     @GetMapping("/")
     public List<Event> showAllUserEvents(@RequestParam String username){
         return eventService.showAllOrganizerEvents(username);
+    }
+    @PutMapping("/join")
+    public ResponseEntity<String> joinEvent(@RequestBody JoinEventRequest joinEventRequest, @RequestParam String eventName){
+        eventService.joinEvent(joinEventRequest,eventName);
+        return ResponseEntity.ok("You joined to the event " + eventName.toUpperCase());
     }
 }

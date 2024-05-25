@@ -7,6 +7,7 @@ import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
+import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,5 +32,17 @@ public class EventService {
     public List<Event> showAllOrganizerEvents(String username){
         User user = userRepository.findByUsername(username).orElseThrow();
         return eventRepository.findAllByOrganizer(user);
+    }
+
+    @Transactional
+    public void joinEvent(JoinEventRequest joinEventRequest, String eventName){
+        Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow();
+        User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow();
+        if(foundEvent.getParticipants().contains(user)){
+            throw new IllegalArgumentException("You already joined to this event!");
+        }
+        foundEvent.getParticipants().add(user);
+        eventRepository.save(foundEvent);
+        EventMapper.convertEventToEventDto(foundEvent);
     }
 }
