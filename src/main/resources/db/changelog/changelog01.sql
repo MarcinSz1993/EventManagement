@@ -29,7 +29,7 @@ create table if not exists event
         primary key,
     modified_date     timestamp(6),
     event_description varchar(255),
-    event_name        varchar(255),
+    event_name        varchar(255) unique,
     event_status      varchar(255)
         constraint event_event_status_check
             check ((event_status)::text = ANY

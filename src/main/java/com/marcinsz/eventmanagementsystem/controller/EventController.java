@@ -40,13 +40,15 @@ public class EventController {
         return eventService.showAllOrganizerEvents(username);
     }
     @PutMapping("/join")
-    public ResponseEntity<String> joinEvent(@RequestBody JoinEventRequest joinEventRequest,
+    public ResponseEntity<String> joinEvent(@RequestBody @Valid JoinEventRequest joinEventRequest,
                                             @RequestParam String eventName){
         try {
             eventService.joinEvent(joinEventRequest,eventName);
             return ResponseEntity.ok("You joined to the event " + eventName.toUpperCase() +".");
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(exception.getMessage());
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
     }
     @DeleteMapping("/")

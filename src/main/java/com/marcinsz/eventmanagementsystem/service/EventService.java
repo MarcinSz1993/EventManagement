@@ -1,6 +1,8 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
+import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
+import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -33,15 +36,15 @@ public class EventService {
     }
 
     public List<Event> showAllOrganizerEvents(String username){
-        User user = userRepository.findByUsername(username).orElseThrow();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
         return eventRepository.findAllByOrganizer(user);
     }
 
     @Transactional
-    public void joinEvent(JoinEventRequest joinEventRequest, String eventName){
+    public void joinEvent(JoinEventRequest joinEventRequest, String eventName) throws Throwable {
 
-        Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow();
-        User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow();
+        Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow((Supplier<Throwable>) () -> new EventNotFoundException(eventName));
+        User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow((Supplier<Throwable>) () -> UserNotFoundException.forEmail(joinEventRequest.email));
         if(foundEvent.getParticipants().contains(user)){
             throw new IllegalArgumentException("You already joined to this event!");
         } else if (!isUserAdult(user.getBirthDate())) {
@@ -61,7 +64,7 @@ public class EventService {
 
     @Transactional
     public String deleteEvent(Long eventId, String token) {
-        Event eventToDelete = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("The event with id " + eventId + " not found."));
+        Event eventToDelete = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
         String organiserUsername = eventToDelete.getOrganizer().getUsername();
         String usernameLoggedUser = jwtService.extractUsername(token);
         String eventName = eventToDelete.getEventName();
@@ -73,6 +76,6 @@ public class EventService {
         return eventName;
     }
     private boolean isUserAdult(LocalDate dateOfBirth){
-        return LocalDate.now().getYear() - dateOfBirth.getYear() >= 18;
+        return dateOfBirth.isAfter(LocalDate.now().minusYears(18));
     }
 }
