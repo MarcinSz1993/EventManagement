@@ -3,6 +3,7 @@ package com.marcinsz.eventmanagementsystem.service;
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
+import com.marcinsz.eventmanagementsystem.model.EventStatus;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
@@ -12,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -37,14 +39,23 @@ public class EventService {
 
     @Transactional
     public void joinEvent(JoinEventRequest joinEventRequest, String eventName){
+
         Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow();
         User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow();
         if(foundEvent.getParticipants().contains(user)){
             throw new IllegalArgumentException("You already joined to this event!");
-        } else if (foundEvent.getParticipants().size() >= foundEvent.getMaxAttendees()) {
+        } else if (!isUserAdult(user.getBirthDate())) {
+            throw new IllegalArgumentException("You are too young to join this event!");
+        } else if (foundEvent.getEventStatus().equals(EventStatus.COMPLETED)) {
             throw new IllegalArgumentException("Sorry, this event is full.");
+        } else if (foundEvent.getEventStatus().equals(EventStatus.CANCELLED)) {
+            throw new IllegalArgumentException("You cannot join to the event because this event has been cancelled.");
         }
         foundEvent.getParticipants().add(user);
+
+        if(foundEvent.getParticipants().size() == foundEvent.getMaxAttendees()){
+            foundEvent.setEventStatus(EventStatus.COMPLETED);
+        }
         eventRepository.save(foundEvent);
     }
 
@@ -60,5 +71,8 @@ public class EventService {
         }
         eventRepository.deleteById(eventId);
         return eventName;
+    }
+    private boolean isUserAdult(LocalDate dateOfBirth){
+        return LocalDate.now().getYear() - dateOfBirth.getYear() >= 18;
     }
 }
