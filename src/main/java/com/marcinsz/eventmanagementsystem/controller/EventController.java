@@ -10,6 +10,7 @@ import com.marcinsz.eventmanagementsystem.service.EventService;
 import com.marcinsz.eventmanagementsystem.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,12 +40,23 @@ public class EventController {
         return eventService.showAllOrganizerEvents(username);
     }
     @PutMapping("/join")
-    public ResponseEntity<String> joinEvent(@RequestBody JoinEventRequest joinEventRequest, @RequestParam String eventName){
+    public ResponseEntity<String> joinEvent(@RequestBody JoinEventRequest joinEventRequest,
+                                            @RequestParam String eventName){
         try {
             eventService.joinEvent(joinEventRequest,eventName);
             return ResponseEntity.ok("You joined to the event " + eventName.toUpperCase() +".");
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(exception.getMessage());
+        }
+    }
+    @DeleteMapping("/")
+    public ResponseEntity<String> deleteEvent(@RequestParam Long eventId,
+                                              @CookieValue String token){
+        try{
+            String eventName = eventService.deleteEvent(eventId, token);
+            return ResponseEntity.ok("You deleted event " + eventName);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());
         }
     }
 }

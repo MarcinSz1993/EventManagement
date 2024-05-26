@@ -20,6 +20,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @Transactional
     public EventDto createEvent(CreateEventRequest createEventRequest,User user) {
@@ -45,5 +46,19 @@ public class EventService {
         }
         foundEvent.getParticipants().add(user);
         eventRepository.save(foundEvent);
+    }
+
+    @Transactional
+    public String deleteEvent(Long eventId, String token) {
+        Event eventToDelete = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("The event with id " + eventId + " not found."));
+        String organiserUsername = eventToDelete.getOrganizer().getUsername();
+        String usernameLoggedUser = jwtService.extractUsername(token);
+        String eventName = eventToDelete.getEventName();
+
+        if(!usernameLoggedUser.equals(organiserUsername)){
+            throw new IllegalArgumentException("You can delete your events only!");
+        }
+        eventRepository.deleteById(eventId);
+        return eventName;
     }
 }
