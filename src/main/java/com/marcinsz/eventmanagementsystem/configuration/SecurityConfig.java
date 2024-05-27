@@ -30,6 +30,8 @@ public class SecurityConfig {
         return httpSecurity.authorizeHttpRequests(registry -> {
                     registry.requestMatchers("/users/**").permitAll();
                     registry.requestMatchers("/login").permitAll();
+                    registry.requestMatchers("/swagger-ui/**").permitAll();
+                    registry.requestMatchers("/v3/api-docs/**").permitAll();
                     registry.requestMatchers("/events**").hasAnyRole("USER","ADMIN");
                     registry.anyRequest().authenticated();
                 })
