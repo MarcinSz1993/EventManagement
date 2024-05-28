@@ -19,3 +19,5 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+  jackson:
+    property-naming-strategy: LOWER_CAMEL_CASE
