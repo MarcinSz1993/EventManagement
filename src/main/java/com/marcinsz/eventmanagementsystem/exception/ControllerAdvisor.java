@@ -26,4 +26,11 @@ public class ControllerAdvisor {
     public String EventNotFoundHandler(EventNotFoundException ex){
         return ex.getMessage();
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.LOCKED)
+    @ExceptionHandler(EventException.class)
+    public String EventExceptionHandler(EventException ex){
+        return ex.getMessage();
+    }
 }
