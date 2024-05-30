@@ -18,8 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.function.Supplier;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -41,7 +39,7 @@ public class UserService {
         return new CreateUserResponse(userDto,token);
     }
 
-    public AuthenticationResponse login(AuthenticationRequest authenticationRequest) throws Throwable {
+    public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
        try {
            authenticationManager.authenticate(
                    new UsernamePasswordAuthenticationToken(
@@ -52,7 +50,7 @@ public class UserService {
        } catch (AuthenticationException exception){
            throw new BadCredentialsException();
        }
-        User user = userRepository.findByUsername(authenticationRequest.getUsername()).orElseThrow((Supplier<Throwable>) () -> new UserNotFoundException(authenticationRequest.getUsername()));
+        User user = userRepository.findByUsername(authenticationRequest.getUsername()).orElseThrow(() -> new UserNotFoundException(authenticationRequest.getUsername()));
         String token = jwtService.generateToken(user);
         return new AuthenticationResponse(token);
     }
