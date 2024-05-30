@@ -11,11 +11,13 @@ import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
+import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -33,6 +35,44 @@ public class EventService {
         event.setOrganizer(user);
         eventRepository.save(event);
         return EventMapper.convertEventToEventDto(event);
+    }
+
+    public EventDto updateEvent(UpdateEventRequest updateEventRequest,Long eventId,String token) {
+        Event foundEvent = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+
+        String organiserUsername = foundEvent.getOrganizer().getUsername();
+        String usernameExtractedFromToken = jwtService.extractUsername(token);
+
+        if(!organiserUsername.equals(usernameExtractedFromToken)){
+            throw new IllegalArgumentException("You cannot update not your event!");
+        }
+
+        if(updateEventRequest.getEventName() != null && !updateEventRequest.getEventName().isEmpty()){
+            foundEvent.setEventName(updateEventRequest.getEventName());
+        }
+        if(updateEventRequest.getEventDescription() != null && !updateEventRequest.getEventDescription().isEmpty()){
+            foundEvent.setEventDescription(updateEventRequest.getEventDescription());
+        }
+        if(updateEventRequest.getLocation() != null && !updateEventRequest.getLocation().isEmpty()){
+            foundEvent.setLocation(updateEventRequest.getLocation());
+        }
+        if(updateEventRequest.getMaxAttendees() != null){
+            foundEvent.setMaxAttendees(updateEventRequest.getMaxAttendees());
+        }
+        if(updateEventRequest.getEventDate() != null){
+            foundEvent.setEventDate(updateEventRequest.getEventDate());
+        }
+        if(updateEventRequest.getTicketPrice() != null){
+            foundEvent.setTicketPrice(updateEventRequest.getTicketPrice());
+        }
+        if(updateEventRequest.getEventType() != null){
+            foundEvent.setEventType(updateEventRequest.getEventType());
+        }
+
+        foundEvent.setModifiedDate(LocalDateTime.now());
+
+        eventRepository.save(foundEvent);
+        return EventMapper.convertEventToEventDto(foundEvent);
     }
 
     public List<Event> showAllOrganizerEvents(String username){
@@ -75,6 +115,7 @@ public class EventService {
         eventRepository.deleteById(eventId);
         return eventName;
     }
+
     private boolean isUserAdult(LocalDate dateOfBirth){
         return dateOfBirth.isAfter(LocalDate.now().minusYears(18));
     }

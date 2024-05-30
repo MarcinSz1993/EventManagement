@@ -6,6 +6,7 @@ import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
+import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
 import com.marcinsz.eventmanagementsystem.service.EventService;
 import com.marcinsz.eventmanagementsystem.service.JwtService;
 import jakarta.validation.Valid;
@@ -33,6 +34,12 @@ public class EventController {
         String username = jwtService.extractUsername(token);
         User user = userRepository.findByUsername(username).orElseThrow();
         return eventService.createEvent(createEventRequest,user);
+    }
+    @PutMapping("/update")
+    public EventDto updateEvent(@RequestBody UpdateEventRequest updateEventRequest,
+                                @RequestParam Long eventId,
+                                @CookieValue String token){
+        return eventService.updateEvent(updateEventRequest,eventId,token);
     }
 
     @GetMapping("/")
