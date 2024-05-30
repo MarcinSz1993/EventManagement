@@ -8,6 +8,8 @@ import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 public class UserMapper {
@@ -44,7 +46,12 @@ public class UserMapper {
                 user.getUsername(),
                 user.getEmail(),
                 user.getPhoneNumber()
-
         );
+    }
+
+    public static List<UserDto> convertListUserToListUserDto(List<User> userList){
+        return userList.stream()
+                .map(UserMapper::convertUserToUserDto)
+                .toList();
     }
 }

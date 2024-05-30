@@ -4,6 +4,7 @@ import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
+import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
 import com.marcinsz.eventmanagementsystem.model.User;
@@ -14,12 +15,13 @@ import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class EventService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
+    @CacheEvict(cacheNames = "events",allEntries = true)
     @Transactional
     public EventDto createEvent(CreateEventRequest createEventRequest,User user) {
         Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
@@ -37,6 +40,7 @@ public class EventService {
         return EventMapper.convertEventToEventDto(event);
     }
 
+    @CacheEvict(cacheNames = "events",allEntries = true)
     public EventDto updateEvent(UpdateEventRequest updateEventRequest,Long eventId,String token) {
         Event foundEvent = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
 
@@ -75,19 +79,24 @@ public class EventService {
         return EventMapper.convertEventToEventDto(foundEvent);
     }
 
-    public List<Event> showAllOrganizerEvents(String username){
+    @Cacheable(cacheNames = "events")
+    public List<EventDto> showAllOrganizerEvents(String username){
         User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
-        return eventRepository.findAllByOrganizer(user);
+        List<Event> allByOrganizer = eventRepository.findAllByOrganizer(user);
+        return EventMapper.convertListEventToListEventDto(allByOrganizer);
+
     }
 
     @Transactional
-    public void joinEvent(JoinEventRequest joinEventRequest, String eventName) throws Throwable {
+    public void joinEvent(JoinEventRequest joinEventRequest, String eventName) {
 
-        Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow((Supplier<Throwable>) () -> new EventNotFoundException(eventName));
-        User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow((Supplier<Throwable>) () -> UserNotFoundException.forEmail(joinEventRequest.email));
+        Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
+        User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(joinEventRequest.email));
+
+        UserMapper.convertUserToUserDto(user);
         if(foundEvent.getParticipants().contains(user)){
             throw new IllegalArgumentException("You already joined to this event!");
-        } else if (!isUserAdult(user.getBirthDate())) {
+        } else if (isUserAdult(user.getBirthDate())) {
             throw new IllegalArgumentException("You are too young to join this event!");
         } else if (foundEvent.getEventStatus().equals(EventStatus.COMPLETED)) {
             throw new IllegalArgumentException("Sorry, this event is full.");
@@ -102,6 +111,7 @@ public class EventService {
         eventRepository.save(foundEvent);
     }
 
+    @CacheEvict(cacheNames = "events",allEntries = true)
     @Transactional
     public String deleteEvent(Long eventId, String token) {
         Event eventToDelete = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));

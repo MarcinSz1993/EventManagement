@@ -4,9 +4,12 @@ import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -23,8 +26,8 @@ public class EventMapper {
                 event.getTicketPrice(),
                 event.getEventType(),
                 event.getCreatedDate(),
-                UserMapper.convertUserToOrganiserDto(event.getOrganizer())
-        );
+                UserMapper.convertUserToOrganiserDto(event.getOrganizer()),
+                UserMapper.convertListUserToListUserDto(event.getParticipants()));
     }
 
     public static Event convertCreateEventRequestToEvent(CreateEventRequest createEventRequest){
@@ -40,5 +43,10 @@ public class EventMapper {
                 null,
                 null,
                 null);
+    }
+
+    public static List<EventDto> convertListEventToListEventDto(List<Event> eventList){
+       return eventList.stream()
+                .map(EventMapper::convertEventToEventDto).collect(Collectors.toList());
     }
 }

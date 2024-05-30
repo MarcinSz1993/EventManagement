@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +24,5 @@ public class EventDto {
     private EventType eventType;
     private LocalDateTime createdDate;
     private OrganiserDto organiser;
+    private List<UserDto> participants;
 }

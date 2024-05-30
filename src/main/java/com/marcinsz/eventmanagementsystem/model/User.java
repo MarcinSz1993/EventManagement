@@ -1,5 +1,6 @@
 package com.marcinsz.eventmanagementsystem.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -40,6 +41,7 @@ public class User implements UserDetails {
 
 
     @ManyToMany(mappedBy = "participants",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JsonBackReference
     private List<Event> events;
 
     @OneToMany(mappedBy = "organizer")

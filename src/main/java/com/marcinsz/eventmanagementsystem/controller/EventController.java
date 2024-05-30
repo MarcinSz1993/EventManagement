@@ -1,7 +1,6 @@
 package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
-import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
@@ -43,7 +42,7 @@ public class EventController {
     }
 
     @GetMapping("/")
-    public List<Event> showAllUserEvents(@RequestParam String username){
+    public List<EventDto> showAllUserEvents(@RequestParam String username){
         return eventService.showAllOrganizerEvents(username);
     }
     @PutMapping("/join")
