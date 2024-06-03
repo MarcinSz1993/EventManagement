@@ -47,9 +47,10 @@ public class EventController {
     }
     @PutMapping("/join")
     public ResponseEntity<String> joinEvent(@RequestBody @Valid JoinEventRequest joinEventRequest,
-                                            @RequestParam String eventName){
+                                            @RequestParam String eventName,
+                                            @CookieValue String token){
         try {
-            eventService.joinEvent(joinEventRequest,eventName);
+            eventService.joinEvent(joinEventRequest,eventName,token);
             return ResponseEntity.ok("You joined to the event " + eventName.toUpperCase() +".");
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(exception.getMessage());

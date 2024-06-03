@@ -8,6 +8,7 @@ import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -50,6 +51,9 @@ public class UserMapper {
     }
 
     public static List<UserDto> convertListUserToListUserDto(List<User> userList){
+        if(userList == null){
+            return Collections.emptyList();
+        }
         return userList.stream()
                 .map(UserMapper::convertUserToUserDto)
                 .toList();

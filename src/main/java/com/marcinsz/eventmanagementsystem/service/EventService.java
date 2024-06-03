@@ -88,8 +88,14 @@ public class EventService {
     }
 
     @Transactional
-    public void joinEvent(JoinEventRequest joinEventRequest, String eventName) {
+    @CacheEvict(value = "events", allEntries = true)
+    public void joinEvent(JoinEventRequest joinEventRequest, String eventName,String token) {
 
+        String username = jwtService.extractUsername(token);
+        User foundUserByToken = userRepository.findByUsername(username).orElseThrow();
+        if(foundUserByToken.getEmail().equals(joinEventRequest.email)){
+            throw new IllegalArgumentException("You can use your email only!");
+        }
         Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
         User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(joinEventRequest.email));
 

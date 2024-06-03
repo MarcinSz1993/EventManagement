@@ -1,7 +1,6 @@
 package com.marcinsz.eventmanagementsystem.request;
 
 import com.marcinsz.eventmanagementsystem.model.EventType;
-import com.marcinsz.eventmanagementsystem.model.User;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -31,5 +30,4 @@ public class CreateEventRequest {
     private double ticketPrice;
     @NotNull(message = "Event type is required")
     private EventType eventType;
-    private User organizer;
 }
