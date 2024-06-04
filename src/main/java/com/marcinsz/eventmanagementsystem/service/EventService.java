@@ -93,7 +93,7 @@ public class EventService {
 
         String username = jwtService.extractUsername(token);
         User foundUserByToken = userRepository.findByUsername(username).orElseThrow();
-        if(foundUserByToken.getEmail().equals(joinEventRequest.email)){
+        if(!foundUserByToken.getEmail().equals(joinEventRequest.email)){
             throw new IllegalArgumentException("You can use your email only!");
         }
         Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));

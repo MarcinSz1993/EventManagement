@@ -5,7 +5,7 @@ public class EventNotFoundException extends RuntimeException{
         super("The event with id: " + id + " does not exist.");
     }
 
-    public EventNotFoundException(String username){
-        super("The event with username: " + username.toUpperCase() + " does not exist.");
+    public EventNotFoundException(String eventName){
+        super("The event with event name: " + eventName.toUpperCase() + " does not exist.");
     }
 }

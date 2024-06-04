@@ -35,10 +35,11 @@ public class EventController {
         return eventService.createEvent(createEventRequest,user);
     }
     @PutMapping("/update")
-    public EventDto updateEvent(@RequestBody UpdateEventRequest updateEventRequest,
+    public ResponseEntity<EventDto> updateEvent(@RequestBody UpdateEventRequest updateEventRequest,
                                 @RequestParam Long eventId,
                                 @CookieValue String token){
-        return eventService.updateEvent(updateEventRequest,eventId,token);
+        EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, token);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
     }
 
     @GetMapping("/")
