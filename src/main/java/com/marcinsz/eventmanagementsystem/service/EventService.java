@@ -2,6 +2,7 @@ package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
+import com.marcinsz.eventmanagementsystem.exception.NotYourEventException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
@@ -48,7 +49,7 @@ public class EventService {
         String usernameExtractedFromToken = jwtService.extractUsername(token);
 
         if(!organiserUsername.equals(usernameExtractedFromToken)){
-            throw new IllegalArgumentException("You cannot update not your event!");
+            throw new NotYourEventException();
         }
 
         if(updateEventRequest.getEventName() != null && !updateEventRequest.getEventName().isEmpty()){

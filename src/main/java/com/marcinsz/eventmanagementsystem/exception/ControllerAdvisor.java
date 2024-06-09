@@ -40,6 +40,12 @@ public class ControllerAdvisor {
     public String EventExceptionHandler(EventException ex){
         return ex.getMessage();
     }
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(NotYourEventException.class)
+    public String NotYourEventExceptionHandler(NotYourEventException ex){
+        return ex.getMessage();
+    }
 
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
