@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Data
 @Entity(name = "app_user")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements UserDetails {
@@ -63,6 +65,8 @@ public class User implements UserDetails {
         this.accountNumber = accountNumber;
         this.accountStatus = accountStatus;
     }
+
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
