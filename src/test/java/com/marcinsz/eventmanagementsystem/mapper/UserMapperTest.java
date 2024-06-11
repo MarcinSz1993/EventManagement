@@ -13,8 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UserMapperTest {
     @Test
@@ -49,6 +48,12 @@ class UserMapperTest {
         Assertions.assertEquals(user.getAccountStatus(),userDto.getAccountStatus());
     }
     @Test
+    public void mapUserToUserDtoShouldThrowNullPointerExceptionWhenInputIsNull(){
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> UserMapper.convertUserToUserDto(null));
+        assertEquals("User should not be null.", exception.getMessage());
+    }
+
+    @Test
     public void shouldMapCreateUserRequestToUser(){
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
                 .firstName("John")
@@ -64,6 +69,12 @@ class UserMapperTest {
         User user = UserMapper.convertCreateUserRequestToUser(createUserRequest);
 
         assertEquals(createUserRequest.getFirstName(),user.getFirstName());
+    }
+
+    @Test
+    public void mapCreateUserRequestToUserShouldThrowNullPointerExceptionWhenInputIsNull(){
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> UserMapper.convertCreateUserRequestToUser(null));
+        assertEquals("CreateUserRequest should not be null.",exception.getMessage());
     }
     @Test
     public void shouldMapUserToOrganiserDto(){
@@ -91,6 +102,12 @@ class UserMapperTest {
         assertEquals(user.getUsername(),organiserDto.getUserName());
         assertEquals(user.getEmail(),organiserDto.getEmail());
         assertEquals(user.getPhoneNumber(),organiserDto.getPhoneNumber());
+    }
+
+    @Test
+    public void mapUserToOrganiserDtoShouldThrowNullPointerExceptionWhenInputIsNull(){
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> UserMapper.convertUserToUserDto(null));
+        assertEquals("User should not be null.", exception.getMessage());
     }
 
     @Test
