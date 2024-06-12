@@ -29,6 +29,9 @@ public class UserService {
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest createUserRequest){
+        if(createUserRequest == null){
+            throw new NullPointerException("CreateUserRequest cannot be null!");
+        }
         User newUser = UserMapper.convertCreateUserRequestToUser(createUserRequest);
         newUser.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         userRepository.save(newUser);

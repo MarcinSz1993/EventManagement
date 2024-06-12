@@ -33,7 +33,7 @@ public class UserController {
 
     @PostMapping("/login")
     public AuthenticationResponse login(@RequestBody @Valid AuthenticationRequest authenticationRequest,
-                                        HttpServletResponse servletResponse) throws Throwable {
+                                        HttpServletResponse servletResponse) {
 
         AuthenticationResponse login = userService.login(authenticationRequest);
         String token = login.getToken();

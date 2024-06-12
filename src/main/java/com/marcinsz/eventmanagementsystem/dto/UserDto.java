@@ -2,12 +2,14 @@ package com.marcinsz.eventmanagementsystem.dto;
 
 import com.marcinsz.eventmanagementsystem.model.Role;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
