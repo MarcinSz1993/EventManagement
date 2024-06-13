@@ -3,14 +3,12 @@ package com.marcinsz.eventmanagementsystem.request;
 import com.marcinsz.eventmanagementsystem.model.EventType;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateEventRequest {
