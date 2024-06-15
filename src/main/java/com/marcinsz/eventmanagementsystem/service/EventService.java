@@ -103,7 +103,7 @@ public class EventService {
         UserMapper.convertUserToUserDto(user);
         if(foundEvent.getParticipants().contains(user)){
             throw new IllegalArgumentException("You already joined to this event!");
-        } else if (isUserAdult(user.getBirthDate())) {
+        } else if (!isUserAdult(user.getBirthDate())) {
             throw new IllegalArgumentException("You are too young to join this event!");
         } else if (foundEvent.getEventStatus().equals(EventStatus.COMPLETED)) {
             throw new IllegalArgumentException("Sorry, this event is full.");
@@ -133,7 +133,7 @@ public class EventService {
         return eventName;
     }
 
-    private boolean isUserAdult(LocalDate dateOfBirth){
-        return dateOfBirth.isAfter(LocalDate.now().minusYears(18));
+    public boolean isUserAdult(LocalDate dateOfBirth){
+        return dateOfBirth.isBefore(LocalDate.now().minusYears(18));
     }
 }
