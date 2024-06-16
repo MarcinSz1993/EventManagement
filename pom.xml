@@ -108,6 +108,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.13</artifactId>
+            <version>3.7.0</version>
+        </dependency>
 
 
     </dependencies>

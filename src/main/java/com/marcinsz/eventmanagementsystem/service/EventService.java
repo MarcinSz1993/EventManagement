@@ -30,6 +30,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
 
     @CacheEvict(cacheNames = "events",allEntries = true)
@@ -38,7 +39,10 @@ public class EventService {
         Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
         event.setOrganizer(user);
         eventRepository.save(event);
-        return EventMapper.convertEventToEventDto(event);
+        EventDto eventDto = EventMapper.convertEventToEventDto(event);
+        kafkaMessageProducer.sendMessageToTopic(eventDto);
+        return eventDto;
+
     }
 
     @CacheEvict(cacheNames = "events",allEntries = true)
