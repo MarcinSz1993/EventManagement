@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  eventmanagement_database:
+    image: postgres
+    volumes:
+      - eventmanagement_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: EventManagementDB
+      POSTGRES_PASSWORD: qwerty
+    ports:
+      - "5432:5432"
+
+  eventmanagement_app:
+    image: marcinsz1993/event_management_app:v1.0
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eventmanagement_database
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://eventmanagement_database:5432/EventManagementDB
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: qwerty
+
+
+volumes:
+  eventmanagement_postgres_data:
+
