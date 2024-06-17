@@ -34,6 +34,8 @@ class EventServiceTest {
     private UserRepository userRepository;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private KafkaMessageProducer kafkaMessageProducer;
 
     @BeforeEach
     void setUp() {
@@ -111,6 +113,7 @@ class EventServiceTest {
 
             when(eventRepository.save(event)).thenReturn(event);
             eventMapperMockedStatic.when(() -> EventMapper.convertEventToEventDto(event)).thenReturn(expectedEventDto);
+            doNothing().when(kafkaMessageProducer).sendMessageToTopic(expectedEventDto);
             EventDto acutalEventDto = eventService.createEvent(createEventRequest, user);
 
             assertEquals(expectedEventDto.getEventName(), acutalEventDto.getEventName());
@@ -123,6 +126,9 @@ class EventServiceTest {
             assertEquals(expectedEventDto.getCreatedDate(), acutalEventDto.getCreatedDate());
             assertEquals(expectedEventDto.getOrganiser(), acutalEventDto.getOrganiser());
             assertEquals(expectedEventDto.getParticipants(), acutalEventDto.getParticipants());
+
+            verify(eventRepository).save(event);
+            verify(kafkaMessageProducer).sendMessageToTopic(expectedEventDto);
         }
     }
 
