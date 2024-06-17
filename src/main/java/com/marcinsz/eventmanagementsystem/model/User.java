@@ -18,6 +18,8 @@ import java.util.List;
 @Data
 @Entity(name = "app_user")
 @Builder
+@NamedQuery(name = "User.getAllUsersEmails",
+            query = "select email from app_user")
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements UserDetails {
