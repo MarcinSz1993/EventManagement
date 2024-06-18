@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -27,8 +28,8 @@ public class KafkaMessageListener {
         }
     }
 
-    public List<String> usersEmail(){
-        return userRepository.getAllUsersEmails();
+    public List<String> usersEmail(LocalDate date){
+        return userRepository.getEmailsUsersBornBefore2006(date);
 
     }
 }

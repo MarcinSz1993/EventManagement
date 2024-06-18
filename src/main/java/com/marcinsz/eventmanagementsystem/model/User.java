@@ -18,8 +18,8 @@ import java.util.List;
 @Data
 @Entity(name = "app_user")
 @Builder
-@NamedQuery(name = "User.getAllUsersEmails",
-            query = "select email from app_user")
+@NamedQuery(name = "User.getEmailsUsersBornBefore2006",
+            query = "SELECT u.email FROM app_user u WHERE u.birthDate < :date")
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements UserDetails {
