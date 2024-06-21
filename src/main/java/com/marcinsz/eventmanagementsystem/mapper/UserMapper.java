@@ -5,21 +5,21 @@ import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.model.Role;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Data
-@NoArgsConstructor
+@Component
 public class UserMapper {
 
-    public static UserDto convertUserToUserDto(User user){
-        if(user == null){
-            throw new NullPointerException("User should not be null.");
+    public UserDto convertUserToUserDto(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User should not be null.");
         }
-        return new UserDto(user.getId(),
+        return new UserDto(
+                user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
@@ -28,14 +28,16 @@ public class UserMapper {
                 user.getRole(),
                 user.getPhoneNumber(),
                 user.getAccountNumber(),
-                user.getAccountStatus());
+                user.getAccountStatus()
+        );
     }
 
-    public static User convertCreateUserRequestToUser(CreateUserRequest createUserRequest){
-        if(createUserRequest == null){
-            throw new NullPointerException("CreateUserRequest should not be null.");
+    public User convertCreateUserRequestToUser(CreateUserRequest createUserRequest) {
+        if (createUserRequest == null) {
+            throw new IllegalArgumentException("CreateUserRequest should not be null.");
         }
-        return new User(createUserRequest.getFirstName(),
+        return new User(
+                createUserRequest.getFirstName(),
                 createUserRequest.getLastName(),
                 createUserRequest.getEmail(),
                 createUserRequest.getUsername(),
@@ -44,14 +46,16 @@ public class UserMapper {
                 Role.USER,
                 createUserRequest.getPhoneNumber(),
                 createUserRequest.getAccountNumber(),
-                "ACTIVE");
+                "ACTIVE"
+        );
     }
 
-    public static OrganiserDto convertUserToOrganiserDto(User user){
-        if(user == null){
-            throw new NullPointerException("User should not be null.");
+    public OrganiserDto convertUserToOrganiserDto(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User should not be null.");
         }
-        return new OrganiserDto(user.getFirstName(),
+        return new OrganiserDto(
+                user.getFirstName(),
                 user.getLastName(),
                 user.getUsername(),
                 user.getEmail(),
@@ -59,12 +63,23 @@ public class UserMapper {
         );
     }
 
-    public static List<UserDto> convertListUserToListUserDto(List<User> userList){
-        if(userList == null){
+    public List<UserDto> convertListUserToListUserDto(List<User> userList) {
+        if (userList == null) {
             return Collections.emptyList();
         }
         return userList.stream()
-                .map(UserMapper::convertUserToUserDto)
-                .toList();
+                .map(user -> new UserDto(
+                        user.getId(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getUsername(),
+                        user.getBirthDate(),
+                        user.getRole(),
+                        user.getPhoneNumber(),
+                        user.getAccountNumber(),
+                        user.getAccountStatus()
+                ))
+                .collect(Collectors.toList());
     }
 }

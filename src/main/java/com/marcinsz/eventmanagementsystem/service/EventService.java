@@ -5,7 +5,9 @@ import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
 import com.marcinsz.eventmanagementsystem.exception.NotYourEventException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
+//import com.marcinsz.eventmanagementsystem.mapper.EventMapperMapStruct;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
+//import com.marcinsz.eventmanagementsystem.mapper.UserMapperMapStruct;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
 import com.marcinsz.eventmanagementsystem.model.User;
@@ -32,17 +34,19 @@ public class EventService {
     private final UserRepository userRepository;
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
+    private final EventMapper eventMapper;
+    private final UserMapper userMapper;
 
-    @CacheEvict(cacheNames = "events",allEntries = true)
+
+    @CacheEvict(cacheNames = "events", allEntries = true)
     @Transactional
-    public EventDto createEvent(CreateEventRequest createEventRequest,User user) {
-        Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
+    public EventDto createEvent(CreateEventRequest createEventRequest, User user) {
+        Event event = eventMapper.convertCreateEventRequestToEvent(createEventRequest);
         event.setOrganizer(user);
         eventRepository.save(event);
-        EventDto eventDto = EventMapper.convertEventToEventDto(event);
+        EventDto eventDto = eventMapper.createEventDtoFromRequest(createEventRequest,user);
         kafkaMessageProducer.sendMessageToTopic(eventDto);
         return eventDto;
-
     }
 
     @CacheEvict(cacheNames = "events",allEntries = true)
@@ -81,14 +85,14 @@ public class EventService {
         foundEvent.setModifiedDate(LocalDateTime.now());
 
         eventRepository.save(foundEvent);
-        return EventMapper.convertEventToEventDto(foundEvent);
+        return eventMapper.convertEventToEventDto(foundEvent);
     }
 
     @Cacheable(cacheNames = "events")
     public List<EventDto> showAllOrganizerEvents(String username){
         User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
         List<Event> allByOrganizer = eventRepository.findAllByOrganizer(user);
-        return EventMapper.convertListEventToListEventDto(allByOrganizer);
+        return eventMapper.convertListEventToListEventDto(allByOrganizer);
 
     }
 
@@ -104,7 +108,7 @@ public class EventService {
         Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
         User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(joinEventRequest.email));
 
-        UserMapper.convertUserToUserDto(user);
+        userMapper.convertUserToUserDto(user);
         if(foundEvent.getParticipants().contains(user)){
             throw new IllegalArgumentException("You already joined to this event!");
         } else if (!isUserAdult(user.getBirthDate())) {

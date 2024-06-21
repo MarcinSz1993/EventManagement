@@ -6,6 +6,7 @@ import com.marcinsz.eventmanagementsystem.model.Role;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -14,8 +15,14 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 class UserMapperTest {
+    private UserMapper userMapper;
+
+    @BeforeEach
+    void setUp() {
+        userMapper = new UserMapper();
+    }
+
     @Test
     public void shouldMapUserToUserDto(){
         User user = User.builder()
@@ -34,7 +41,7 @@ class UserMapperTest {
                 .organizedEvents(Collections.emptyList())
                 .build();
 
-        UserDto userDto = UserMapper.convertUserToUserDto(user);
+        UserDto userDto = userMapper.convertUserToUserDto(user);
 
         Assertions.assertEquals(user.getId(),userDto.getUser_id());
         Assertions.assertEquals(user.getFirstName(),userDto.getFirstName());
@@ -49,7 +56,7 @@ class UserMapperTest {
     }
     @Test
     public void mapUserToUserDtoShouldThrowNullPointerExceptionWhenInputIsNull(){
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> UserMapper.convertUserToUserDto(null));
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> userMapper.convertUserToUserDto(null));
         assertEquals("User should not be null.", exception.getMessage());
     }
 
@@ -66,14 +73,14 @@ class UserMapperTest {
                 .accountNumber("1234567890")
                 .build();
 
-        User user = UserMapper.convertCreateUserRequestToUser(createUserRequest);
+        User user = userMapper.convertCreateUserRequestToUser(createUserRequest);
 
         assertEquals(createUserRequest.getFirstName(),user.getFirstName());
     }
 
     @Test
     public void mapCreateUserRequestToUserShouldThrowNullPointerExceptionWhenInputIsNull(){
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> UserMapper.convertCreateUserRequestToUser(null));
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> userMapper.convertCreateUserRequestToUser(null));
         assertEquals("CreateUserRequest should not be null.",exception.getMessage());
     }
     @Test
@@ -95,7 +102,7 @@ class UserMapperTest {
                 .organizedEvents(Collections.emptyList())
                 .build();
 
-        OrganiserDto organiserDto = UserMapper.convertUserToOrganiserDto(user);
+        OrganiserDto organiserDto = userMapper.convertUserToOrganiserDto(user);
 
         assertEquals(user.getFirstName(),organiserDto.getFirstName());
         assertEquals(user.getLastName(),organiserDto.getLastName());
@@ -106,7 +113,7 @@ class UserMapperTest {
 
     @Test
     public void mapUserToOrganiserDtoShouldThrowNullPointerExceptionWhenInputIsNull(){
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> UserMapper.convertUserToUserDto(null));
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> userMapper.convertUserToUserDto(null));
         assertEquals("User should not be null.", exception.getMessage());
     }
 
@@ -129,7 +136,7 @@ class UserMapperTest {
                 .build();
         List<User> userList = new ArrayList<>();
         userList.add(user1);
-        List<UserDto> userDtoList = UserMapper.convertListUserToListUserDto(userList);
+        List<UserDto> userDtoList = userMapper.convertListUserToListUserDto(userList);
 
         assertEquals(userList.size(),userDtoList.size());
         assertEquals(userList.get(0).getId(),userDtoList.get(0).getUser_id());
@@ -181,7 +188,7 @@ class UserMapperTest {
         userList.add(user1);
         userList.add(user2);
 
-        List<UserDto> userDtoList = UserMapper.convertListUserToListUserDto(userList);
+        List<UserDto> userDtoList = userMapper.convertListUserToListUserDto(userList);
 
         assertEquals(userList.size(),userDtoList.size());
 
@@ -199,13 +206,13 @@ class UserMapperTest {
     }
     @Test
     public void mapListUserToListUserDtoShouldReturnEmptyListWhenInputIsNull(){
-        List<UserDto> userDtoList = UserMapper.convertListUserToListUserDto(null);
+        List<UserDto> userDtoList = userMapper.convertListUserToListUserDto(null);
         Assertions.assertTrue(userDtoList.isEmpty());
     }
     @Test
     public void mapListUserToListUserDtoShouldReturnEmptyListWhenInputIsEmptyList(){
         List<User> userList = Collections.emptyList();
-        List<UserDto> userDtoList = UserMapper.convertListUserToListUserDto(userList);
+        List<UserDto> userDtoList = userMapper.convertListUserToListUserDto(userList);
         assertTrue(userDtoList.isEmpty());
     }
 

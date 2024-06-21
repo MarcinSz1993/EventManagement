@@ -4,6 +4,7 @@ import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.dto.OrganiserDto;
 import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
+import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -13,8 +14,11 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@AllArgsConstructor
 class EventMapperTest {
+    private UserMapper userMapper;
+
+    private EventMapper eventMapper;
     @Test
     public void shouldMapEventToEventDto() {
         User user = User.builder()
@@ -57,7 +61,7 @@ class EventMapperTest {
                 .phoneNumber("123456789")
                 .build();
 
-        EventDto eventDto = EventMapper.convertEventToEventDto(event);
+        EventDto eventDto = eventMapper.convertEventToEventDto(event);
 
         assertEquals(event.getEventName(), eventDto.getEventName());
         assertEquals(event.getEventDescription(), eventDto.getEventDescription());
@@ -82,7 +86,7 @@ class EventMapperTest {
                 .eventType(EventType.EVERYBODY)
                 .build();
 
-        Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
+        Event event = eventMapper.convertCreateEventRequestToEvent(createEventRequest);
 
         assertEquals(createEventRequest.getEventName(), event.getEventName());
         assertEquals(createEventRequest.getEventDescription(), event.getEventDescription());
@@ -165,7 +169,7 @@ class EventMapperTest {
         eventList.add(event1);
         eventList.add(event2);
 
-        List<EventDto> listEventDto = EventMapper.convertListEventToListEventDto(eventList);
+        List<EventDto> listEventDto = eventMapper.convertListEventToListEventDto(eventList);
 
         assertEquals(eventList.size(),listEventDto.size());
         assertEquals(eventList.get(0).getEventName(),listEventDto.get(0).getEventName());
@@ -177,7 +181,7 @@ class EventMapperTest {
         assertEquals(eventList.get(0).getTicketPrice(),listEventDto.get(0).getTicketPrice());
         assertEquals(eventList.get(0).getEventType(),listEventDto.get(0).getEventType());
         assertEquals(eventList.get(0).getCreatedDate(),listEventDto.get(0).getCreatedDate());
-        assertEquals(UserMapper.convertUserToOrganiserDto(user1),listEventDto.get(0).getOrganiser());
+        assertEquals(userMapper.convertUserToOrganiserDto(user1),listEventDto.get(0).getOrganiser());
         assertTrue(listEventDto.get(0).getParticipants().isEmpty());
     }
 }

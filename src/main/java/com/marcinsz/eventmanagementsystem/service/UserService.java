@@ -3,7 +3,7 @@ package com.marcinsz.eventmanagementsystem.service;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.exception.BadCredentialsException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
-import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
+import com.marcinsz.eventmanagementsystem.mapper.UserMapperMapStruct;
 import com.marcinsz.eventmanagementsystem.model.AuthenticationResponse;
 import com.marcinsz.eventmanagementsystem.model.CreateUserResponse;
 import com.marcinsz.eventmanagementsystem.model.User;
@@ -26,16 +26,20 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserMapperMapStruct userMapperMapStruct;
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest createUserRequest){
         if(createUserRequest == null){
             throw new NullPointerException("CreateUserRequest cannot be null!");
         }
-        User newUser = UserMapper.convertCreateUserRequestToUser(createUserRequest);
+
+        User newUser = userMapperMapStruct.convertCreateUserRequestToUser(createUserRequest);
         newUser.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         userRepository.save(newUser);
-        UserDto userDto = UserMapper.convertUserToUserDto(newUser);
+
+
+        UserDto userDto = userMapperMapStruct.convertUserToUserDto(newUser);
 
         String token = jwtService.generateToken(newUser);
 
