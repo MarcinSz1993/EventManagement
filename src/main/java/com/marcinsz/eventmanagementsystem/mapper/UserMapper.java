@@ -5,6 +5,7 @@ import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.model.Role;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
+import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -12,11 +13,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@Data
 public class UserMapper {
 
     public UserDto convertUserToUserDto(User user) {
         if (user == null) {
-            throw new IllegalArgumentException("User should not be null.");
+            throw new NullPointerException("User should not be null.");
         }
         return new UserDto(
                 user.getId(),
@@ -34,7 +36,7 @@ public class UserMapper {
 
     public User convertCreateUserRequestToUser(CreateUserRequest createUserRequest) {
         if (createUserRequest == null) {
-            throw new IllegalArgumentException("CreateUserRequest should not be null.");
+            throw new NullPointerException("CreateUserRequest should not be null.");
         }
         return new User(
                 createUserRequest.getFirstName(),

@@ -1,5 +1,6 @@
 package com.marcinsz.eventmanagementsystem.mapper;
 
+import com.marcinsz.eventmanagementsystem.dto.OrganiserDto;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
@@ -20,6 +21,13 @@ public interface UserMapperMapStruct {
     })
     User convertCreateUserRequestToUser(CreateUserRequest createUserRequest);
 
+    @Mapping(target = "userName", source = "username")
+    OrganiserDto convertUserToOrganiserDto(User user);
+
+    @Mappings({
+            @Mapping(target = "user_id", source = "id"),
+            @Mapping(target = "role", constant = "USER"),
+    })
     List<UserDto> convertListUserToListUserDto(List<User> userList);
 
 }

@@ -4,7 +4,7 @@ import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.dto.OrganiserDto;
 import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
-import lombok.AllArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -14,11 +14,16 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-@AllArgsConstructor
+
 class EventMapperTest {
     private UserMapper userMapper;
-
     private EventMapper eventMapper;
+
+    @BeforeEach
+    void setUp(){
+        userMapper = new UserMapper();
+        eventMapper = new EventMapper(userMapper);
+    }
     @Test
     public void shouldMapEventToEventDto() {
         User user = User.builder()
