@@ -165,7 +165,6 @@
                                 <artifactId>lombok</artifactId>
                                 <version>${lombok.version}</version>
                             </path>
-                            <!-- other annotation processors -->
                         </annotationProcessorPaths>
                     </configuration>
                 </plugin>

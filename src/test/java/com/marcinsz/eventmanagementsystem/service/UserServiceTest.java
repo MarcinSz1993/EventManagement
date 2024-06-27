@@ -49,7 +49,7 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    //@Test
+    @Test
     public void shouldSuccessfullyCreateUser() {
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
                 .firstName("John")

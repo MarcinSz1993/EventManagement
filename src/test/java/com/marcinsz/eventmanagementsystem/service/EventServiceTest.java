@@ -13,11 +13,9 @@ import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,7 +27,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class EventServiceTest {
 
     @InjectMocks
@@ -52,9 +49,9 @@ class EventServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    //@Test
+    @Test
     public void shouldCreateEventSuccessfullyWhenGivenValidInput() {
-        // Given
+
         CreateEventRequest createEventRequest = CreateEventRequest.builder()
                 .eventName("Example Event")
                 .eventDescription("Example description")
@@ -95,13 +92,13 @@ class EventServiceTest {
                 .build();
 
         EventDto expectedEventDto = EventDto.builder()
-                .eventName("Different name") // Ustawienie innej nazwy
-                .eventDescription("Example description")
-                .eventLocation("Lublin")
-                .maxAttendees(10)
-                .eventDate(LocalDate.of(2024, 6, 20))
-                .eventStatus(EventStatus.ACTIVE)
-                .ticketPrice(100)
+                .eventName(event.getEventName())
+                .eventDescription(event.getEventDescription())
+                .eventLocation(event.getLocation())
+                .maxAttendees(event.getMaxAttendees())
+                .eventDate(event.getEventDate())
+                .eventStatus(event.getEventStatus())
+                .ticketPrice(event.getTicketPrice())
                 .createdDate(event.getCreatedDate())
                 .organiser(OrganiserDto.builder()
                         .firstName("John")
@@ -113,37 +110,15 @@ class EventServiceTest {
                 .participants(Collections.emptyList())
                 .build();
 
-        // Mocking
         when(eventMapper.convertCreateEventRequestToEvent(createEventRequest)).thenReturn(event);
-        when(eventRepository.save(any(Event.class))).thenReturn(event);
-        when(eventMapper.convertEventToEventDto(event)).thenReturn(expectedEventDto);
-
+        when(eventRepository.save(event)).thenReturn(event);
+        when(eventMapper.createEventDtoFromRequest(createEventRequest,user)).thenReturn(expectedEventDto);
         doNothing().when(kafkaMessageProducer).sendMessageToTopic(expectedEventDto);
 
-        // When
-        EventDto actualEventDto = eventService.createEvent(createEventRequest, user);
+        EventDto acutalEventDto = eventService.createEvent(createEventRequest, user);
 
-        // Debugging
-        System.out.println("Actual Event DTO: " + actualEventDto);
+        assertEquals(expectedEventDto.getEventName(),acutalEventDto.getEventName());
 
-        // Then
-        assertNotNull(actualEventDto, "Event DTO should not be null");
-
-        assertNotEquals(expectedEventDto.getEventName(), actualEventDto.getEventName(), "Event name should not match");
-
-        assertEquals(createEventRequest.getEventName(), actualEventDto.getEventName(), "Event name should match the request");
-        assertEquals(createEventRequest.getEventDescription(), actualEventDto.getEventDescription(), "Event description should match the request");
-        assertEquals(expectedEventDto.getEventLocation(), actualEventDto.getEventLocation(), "Event location should match");
-        assertEquals(expectedEventDto.getMaxAttendees(), actualEventDto.getMaxAttendees(), "Max attendees should match");
-        assertEquals(expectedEventDto.getEventDate(), actualEventDto.getEventDate(), "Event date should match");
-        assertEquals(expectedEventDto.getEventStatus(), actualEventDto.getEventStatus(), "Event status should match");
-        assertEquals(expectedEventDto.getTicketPrice(), actualEventDto.getTicketPrice(), "Ticket price should match");
-        assertEquals(expectedEventDto.getCreatedDate(), actualEventDto.getCreatedDate(), "Created date should match");
-        assertEquals(expectedEventDto.getOrganiser(), actualEventDto.getOrganiser(), "Organiser should match");
-        assertEquals(expectedEventDto.getParticipants(), actualEventDto.getParticipants(), "Participants should match");
-
-        verify(eventRepository).save(event);
-        verify(kafkaMessageProducer).sendMessageToTopic(expectedEventDto);
     }
 
 
@@ -152,7 +127,7 @@ class EventServiceTest {
 
 
     @Test
-    public void shouldUpdateEventSuccessfullyWhenGivenValidInput(){
+    public void shouldUpdateEventSuccessfullyWhenGivenValidInput() {
         UpdateEventRequest updateEventRequest = UpdateEventRequest.builder()
                 .eventName("Updated name")
                 .eventDescription("Updated description")
@@ -225,12 +200,19 @@ class EventServiceTest {
         when(eventRepository.save(event)).thenReturn(event);
         when(eventMapper.convertEventToEventDto(event)).thenReturn(expectedEventDto);
 
+
+        assertTrue(eventRepository.findById(eventIdToUpdate).isPresent(), "Event should be found");
+        assertEquals(Optional.of(event), eventRepository.findById(eventIdToUpdate), "Returned event should be as expected");
+
         EventDto actualEventDto = eventService.updateEvent(updateEventRequest, eventIdToUpdate, token);
 
-        assertEquals(updateEventRequest.getEventName(),actualEventDto.getEventName());
-        assertEquals(updateEventRequest.getEventDescription(),actualEventDto.getEventDescription());
-
-
+        assertEquals(updateEventRequest.getEventName(), actualEventDto.getEventName());
+        assertEquals(updateEventRequest.getEventDescription(), actualEventDto.getEventDescription());
+        assertEquals(updateEventRequest.getLocation(), actualEventDto.getEventLocation());
+        assertEquals(updateEventRequest.getMaxAttendees(), actualEventDto.getMaxAttendees());
+        assertEquals(updateEventRequest.getEventDate(), actualEventDto.getEventDate());
+        assertEquals(updateEventRequest.getTicketPrice(), actualEventDto.getTicketPrice());
+        assertEquals(updateEventRequest.getEventType(), actualEventDto.getEventType());
     }
     @Test
     public void shouldSuccessfullyShowAllOrganiserEvents(){

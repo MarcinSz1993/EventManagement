@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
                         name = "Marcin",
                         email = "marcinsz1993@hotmail.com"
                 ),
-                description = "OpenApi documentation for Spring Security",
+                description = "OpenApi documentation for EventManagementSystem",
                 title = "OpenApi specification - MarcinSz",
                 version = "1.0",
                 license = @License(
