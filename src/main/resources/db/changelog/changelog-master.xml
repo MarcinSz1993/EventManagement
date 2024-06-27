@@ -7,4 +7,5 @@
     <changeSet id="0" author="admin">
 
     </changeSet>
+    <include file="/db/changelog/changelog01.sql"/>
 </databaseChangeLog>
