@@ -2,7 +2,6 @@ package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.model.User;
-import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
@@ -19,50 +18,47 @@ import java.util.List;
 
 @Validated
 @RestController
-@RequestMapping("/events")
+@RequestMapping("events/")
 @RequiredArgsConstructor
 public class EventController {
-
     private final EventService eventService;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
-    @PostMapping("/")
-    public EventDto createEvent(@RequestBody @Valid CreateEventRequest createEventRequest,
-                                @CookieValue String token){
+
+    @PostMapping
+    public EventDto createEvent(@RequestBody @Valid CreateEventRequest createEventRequest, @CookieValue String token) {
 
         String username = jwtService.extractUsername(token);
-        User user = userRepository.findByUsername(username).orElseThrow();
-        return eventService.createEvent(createEventRequest,user);
+        User user = eventService.findByUsername(username);
+        return eventService.createEvent(createEventRequest, user);
     }
-    @PutMapping("/update")
-    public ResponseEntity<EventDto> updateEvent(@RequestBody UpdateEventRequest updateEventRequest,
-                                @RequestParam Long eventId,
-                                @CookieValue String token){
+
+    @PutMapping
+    public ResponseEntity<EventDto> updateEvent(@RequestBody UpdateEventRequest updateEventRequest, @RequestParam Long eventId, @CookieValue String token) {
         EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, token);
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
     }
 
-    @GetMapping("/")
-    public List<EventDto> showAllUserEvents(@RequestParam String username){
+    @GetMapping
+    public List<EventDto> showAllUserEvents(@RequestParam String username) {
         return eventService.showAllOrganizerEvents(username);
     }
+
     @PutMapping("/join")
-    public ResponseEntity<String> joinEvent(@RequestBody @Valid JoinEventRequest joinEventRequest,
-                                            @RequestParam String eventName,
-                                            @CookieValue String token){
+    public ResponseEntity<String> joinEvent(@RequestBody @Valid JoinEventRequest joinEventRequest, @RequestParam String eventName, @CookieValue String token) {
         try {
-            eventService.joinEvent(joinEventRequest,eventName,token);
-            return ResponseEntity.ok("You joined to the event " + eventName.toUpperCase() +".");
+            eventService.joinEvent(joinEventRequest, eventName, token);
+            return ResponseEntity.ok("You joined to the event " + eventName.toUpperCase() + ".");
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(exception.getMessage());
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
-    @DeleteMapping("/")
-    public ResponseEntity<String> deleteEvent(@RequestParam Long eventId,
-                                              @CookieValue String token){
-        try{
+
+    @DeleteMapping
+    public ResponseEntity<String> deleteEvent(@RequestParam Long eventId, @CookieValue String token) {
+        try {
             String eventName = eventService.deleteEvent(eventId, token);
             return ResponseEntity.ok("You deleted event " + eventName);
         } catch (IllegalArgumentException exception) {

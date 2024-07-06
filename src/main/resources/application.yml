@@ -1,8 +1,9 @@
 spring:
+
   datasource:
     url: jdbc:postgresql://localhost:5432/EventManagementDB
     username: postgres
-    password: qwerty
+    password: ${PG_PASS:qwerty}
     driver-class-name: org.postgresql.Driver
 
   liquibase:
@@ -24,6 +25,11 @@ spring:
 
 
   kafka:
+    config:
+      allEventsTopic: "allEvents"
+      cancelledEventsTopic: "cancelledEvents"
+      groupId: "EventManagement-group"
+
     producer:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -52,3 +58,8 @@ spring:
           auth: true
           starttls:
             enable: true
+
+weather:
+  api:
+    apiKey: 7e546b0a93e0436896c160950242605
+    baseUrl: https://api.weatherapi.com/v1/forecast.json

@@ -36,8 +36,8 @@ public class ControllerAdvisor {
 
     @ResponseBody
     @ResponseStatus(HttpStatus.LOCKED)
-    @ExceptionHandler(EventException.class)
-    public String EventExceptionHandler(EventException ex){
+    @ExceptionHandler(EventForecastTooEarlyException.class)
+    public String EventExceptionHandler(EventForecastTooEarlyException ex){
         return ex.getMessage();
     }
     @ResponseBody

@@ -4,7 +4,6 @@ import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.dto.OrganiserDto;
 import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -16,14 +15,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EventMapperTest {
-    private UserMapper userMapper;
-    private EventMapper eventMapper;
-
-    @BeforeEach
-    void setUp(){
-        userMapper = new UserMapper();
-        eventMapper = new EventMapper(userMapper);
-    }
     @Test
     public void shouldMapEventToEventDto() {
         User user = User.builder()
@@ -51,7 +42,7 @@ class EventMapperTest {
                 .eventDate(LocalDate.of(2024, 6, 20))
                 .eventStatus(EventStatus.ACTIVE)
                 .ticketPrice(20.0)
-                .eventType(EventType.CHILDREN)
+                .eventTarget(EventTarget.CHILDREN)
                 .createdDate(LocalDateTime.now())
                 .modifiedDate(null)
                 .participants(Collections.emptyList())
@@ -66,7 +57,7 @@ class EventMapperTest {
                 .phoneNumber("123456789")
                 .build();
 
-        EventDto eventDto = eventMapper.convertEventToEventDto(event);
+        EventDto eventDto = EventMapper.convertEventToEventDto(event);
 
         assertEquals(event.getEventName(), eventDto.getEventName());
         assertEquals(event.getEventDescription(), eventDto.getEventDescription());
@@ -74,7 +65,7 @@ class EventMapperTest {
         assertEquals(event.getEventDate(), eventDto.getEventDate());
         assertEquals(event.getEventStatus(), eventDto.getEventStatus());
         assertEquals(event.getTicketPrice(), eventDto.getTicketPrice());
-        assertEquals(event.getEventType(), eventDto.getEventType());
+        assertEquals(event.getEventTarget(), eventDto.getEventTarget());
         assertEquals(event.getCreatedDate(), eventDto.getCreatedDate());
         assertEquals(organiserDto, eventDto.getOrganiser());
         assertTrue(eventDto.getParticipants().isEmpty());
@@ -88,10 +79,10 @@ class EventMapperTest {
                 .maxAttendees(10)
                 .eventDate(LocalDate.of(2024, 6, 20))
                 .ticketPrice(100)
-                .eventType(EventType.EVERYBODY)
+                .eventTarget(EventTarget.EVERYBODY)
                 .build();
 
-        Event event = eventMapper.convertCreateEventRequestToEvent(createEventRequest);
+        Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
 
         assertEquals(createEventRequest.getEventName(), event.getEventName());
         assertEquals(createEventRequest.getEventDescription(), event.getEventDescription());
@@ -100,7 +91,7 @@ class EventMapperTest {
         assertEquals(createEventRequest.getEventDate(), event.getEventDate());
         assertEquals(EventStatus.ACTIVE, event.getEventStatus());
         assertEquals(createEventRequest.getTicketPrice(), event.getTicketPrice());
-        assertEquals(createEventRequest.getEventType(), event.getEventType());
+        assertEquals(createEventRequest.getEventTarget(), event.getEventTarget());
         assertNull(event.getModifiedDate());
         assertNull(event.getParticipants());
         assertNull(event.getOrganizer());
@@ -149,7 +140,7 @@ class EventMapperTest {
                 .eventDate(LocalDate.of(2024, 6, 20))
                 .eventStatus(EventStatus.ACTIVE)
                 .ticketPrice(20.0)
-                .eventType(EventType.CHILDREN)
+                .eventTarget(EventTarget.CHILDREN)
                 .createdDate(LocalDateTime.now())
                 .modifiedDate(null)
                 .participants(Collections.emptyList())
@@ -165,7 +156,7 @@ class EventMapperTest {
                 .eventDate(LocalDate.of(2024, 6, 20))
                 .eventStatus(EventStatus.ACTIVE)
                 .ticketPrice(20.0)
-                .eventType(EventType.CHILDREN)
+                .eventTarget(EventTarget.CHILDREN)
                 .createdDate(LocalDateTime.now())
                 .modifiedDate(null)
                 .participants(Collections.emptyList())
@@ -174,7 +165,7 @@ class EventMapperTest {
         eventList.add(event1);
         eventList.add(event2);
 
-        List<EventDto> listEventDto = eventMapper.convertListEventToListEventDto(eventList);
+        List<EventDto> listEventDto = EventMapper.convertListEventToListEventDto(eventList);
 
         assertEquals(eventList.size(),listEventDto.size());
         assertEquals(eventList.get(0).getEventName(),listEventDto.get(0).getEventName());
@@ -184,9 +175,9 @@ class EventMapperTest {
         assertEquals(eventList.get(0).getEventDate(),listEventDto.get(0).getEventDate());
         assertEquals(eventList.get(0).getEventStatus(),listEventDto.get(0).getEventStatus());
         assertEquals(eventList.get(0).getTicketPrice(),listEventDto.get(0).getTicketPrice());
-        assertEquals(eventList.get(0).getEventType(),listEventDto.get(0).getEventType());
+        assertEquals(eventList.get(0).getEventTarget(),listEventDto.get(0).getEventTarget());
         assertEquals(eventList.get(0).getCreatedDate(),listEventDto.get(0).getCreatedDate());
-        assertEquals(userMapper.convertUserToOrganiserDto(user1),listEventDto.get(0).getOrganiser());
+        assertEquals(UserMapper.convertUserToOrganiserDto(user1),listEventDto.get(0).getOrganiser());
         assertTrue(listEventDto.get(0).getParticipants().isEmpty());
     }
 }

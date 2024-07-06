@@ -9,12 +9,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/weather")
+@RequestMapping("weather/")
 @RequiredArgsConstructor
 public class WeatherController {
-
     private final WeatherService weatherService;
-    @GetMapping("/")
+    @GetMapping
     public WeatherDto getWeatherOnEventDay(@RequestParam Long eventId) throws Throwable {
         return weatherService.weatherFromApi(eventId);
     }

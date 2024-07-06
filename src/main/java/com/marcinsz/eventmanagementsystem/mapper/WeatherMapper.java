@@ -1,6 +1,6 @@
 package com.marcinsz.eventmanagementsystem.mapper;
 
-import com.marcinsz.eventmanagementsystem.api.WeatherFromApi;
+import com.marcinsz.eventmanagementsystem.api.*;
 import com.marcinsz.eventmanagementsystem.dto.WeatherDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,18 +8,20 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class WeatherMapper {
-
-    public static WeatherDto convertWeatherFromApiToWeatherDto(WeatherFromApi weatherFromApi){
-        return new WeatherDto(weatherFromApi.getForecast().getForecastday().get(0).getDate(),
-                              weatherFromApi.getLocation().getName(),
-                              weatherFromApi.getLocation().getCountry(),
-                              weatherFromApi.getForecast().getForecastday().get(0).getAstro().getSunrise(),
-                              weatherFromApi.getForecast().getForecastday().get(0).getAstro().getSunset(),
-                              weatherFromApi.getForecast().getForecastday().get(0).getDay().getMaxtempC(),
-                              weatherFromApi.getForecast().getForecastday().get(0).getDay().getMintempC(),
-                              weatherFromApi.getForecast().getForecastday().get(0).getDay().getMaxwindKph(),
-                              weatherFromApi.getForecast().getForecastday().get(0).getDay().getDailyChanceOfRain(),
-                              weatherFromApi.getForecast().getForecastday().get(0).getDay().getDailyChanceOfSnow());
-
+    public static WeatherDto convertWeatherFromApiToWeatherDto(WeatherFromApi weatherFromApi) {
+        Day day = weatherFromApi.getForecast().getForecastday().get(0).getDay();
+        Astro astro = weatherFromApi.getForecast().getForecastday().get(0).getAstro();
+        Location location = weatherFromApi.getLocation();
+        Forecastday forecastday = weatherFromApi.getForecast().getForecastday().get(0);
+        return new WeatherDto(forecastday.getDate(),
+                location.getName(),
+                location.getCountry(),
+                astro.getSunrise(),
+                astro.getSunset(),
+                day.getMaxtempC(),
+                day.getMintempC(),
+                day.getMaxwindKph(),
+                day.getDailyChanceOfRain(),
+                day.getDailyChanceOfSnow());
     }
 }

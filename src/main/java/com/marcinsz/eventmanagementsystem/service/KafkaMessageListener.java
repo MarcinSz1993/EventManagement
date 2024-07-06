@@ -1,8 +1,9 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
-import com.marcinsz.eventmanagementsystem.model.EventType;
+import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,9 +19,10 @@ public class KafkaMessageListener {
 
     private final NotificationService notificationService;
     private final UserRepository userRepository;
-    @KafkaListener(topics = "allEvents", groupId = "events-group")
-    public void consumeMessage(EventDto eventDto){
-        if(eventDto.getEventType().equals(EventType.ADULTS_ONLY)){
+
+    @KafkaListener(topics = "${spring.kafka.config.allEventsTopic}", groupId = "${spring.kafka.config.group-id}")
+    public void consumeCreateEventMessage(EventDto eventDto) throws MessagingException {
+        if(eventDto.getEventTarget().equals(EventTarget.ADULTS_ONLY)){
             notificationService.sendNotification(eventDto);
             log.info(String.valueOf(eventDto));
         } else {
@@ -28,8 +30,15 @@ public class KafkaMessageListener {
         }
     }
 
+    @KafkaListener(topics = "${spring.kafka.config.cancelledEventsTopic}",groupId = "${spring.kafka.config.group-id}")
+    public void consumeEventCancelledMessage(EventDto eventDto) throws MessagingException {
+        notificationService.sendNotification(eventDto);
+
+
+    }
+
     public List<String> usersEmail(LocalDate date){
-        return userRepository.getEmailsUsersBornBefore2006(date);
+        return userRepository.getEmailsFromAdultUsers(date);
 
     }
 }

@@ -8,7 +8,8 @@ public class Current {
     private int last_updated_epoch;
     @JsonProperty("last_updated")
     private String lastUpdated;
-    private int temp_c;
+    @JsonProperty("temp_c")
+    private int tempC;
     @JsonProperty("temp_f")
     private int tempF;
     @JsonProperty("is_day")

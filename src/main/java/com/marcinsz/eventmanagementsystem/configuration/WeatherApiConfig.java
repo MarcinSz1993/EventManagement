@@ -7,9 +7,8 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "spring.kafka.config")
-public class KafkaConfig {
-    private String allEventsTopic;
-    private String CancelledEventsTopic;
-    private String groupId;
+@ConfigurationProperties(prefix = "weather.api")
+public class WeatherApiConfig {
+    private String apiKey;
+    private String baseUrl;
 }

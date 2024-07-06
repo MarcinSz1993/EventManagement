@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 @Validated
 @RestController
-@RequestMapping("/users")
+@RequestMapping("users/")
 @RequiredArgsConstructor
 public class UserController {
-
     private final UserService userService;
-    @PostMapping("/")
+    @PostMapping
     public CreateUserResponse createUser(@RequestBody @Valid CreateUserRequest createUserRequest,
                                          HttpServletResponse servletResponse){
 

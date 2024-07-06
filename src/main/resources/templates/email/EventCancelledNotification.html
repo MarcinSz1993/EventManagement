@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${eventName}">has been cancelled!</title>
+    <style>
+        body{
+            background-color: beige;
+        }
+        h1{
+            color: red;
+        }
+        p{
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<h1>The event <span th:text="${eventName}"></span> has been cancelled.</h1>
+<p>We must inform you that the event you wanted to take a part has been cancelled.<br>
+For more info please contact the organiser.<br><br>
+    Organiser's info:<br><br>
+    <span th:text="${organiserFirstName}">Name:</span><br>
+    <span th:text="${organiserLastName}">Last name:</span><br>
+    <span th:text="${organiserUserName}">Username:</span><br>
+    <span th:text="${organiserPhoneNumber}">Phone number:</span>
+</p>
+</body>
+</html>

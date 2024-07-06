@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: EventManagementDB
-      POSTGRES_PASSWORD: qwerty
+      POSTGRES_PASSWORD: ${PG_PASS}
     ports:
       - "5432:5432"
 
@@ -30,6 +30,8 @@ services:
     container_name: zookeeper
     ports:
       - "2181:2181"
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: yes
 
   kafka:
     image: wurstmeister/kafka

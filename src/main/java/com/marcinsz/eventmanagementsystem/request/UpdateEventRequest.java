@@ -1,6 +1,6 @@
 package com.marcinsz.eventmanagementsystem.request;
 
-import com.marcinsz.eventmanagementsystem.model.EventType;
+import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,5 +20,5 @@ public class UpdateEventRequest {
     private Integer maxAttendees;
     private LocalDate eventDate;
     private Double ticketPrice;
-    private EventType eventType;
+    private EventTarget eventTarget;
 }

@@ -18,7 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Event {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,11 +31,11 @@ public class Event {
     private EventStatus eventStatus;
     private double ticketPrice;
     @Enumerated(value = EnumType.STRING)
-    private EventType eventType;
+    private EventTarget eventTarget;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "participants_events",
             joinColumns = {
@@ -53,12 +52,19 @@ public class Event {
     @JoinColumn(name = "organizer_id")
     @JsonBackReference
     private User organizer;
-
-
-    public Event(String eventName, String eventDescription, String location,
-                 int maxAttendees, LocalDate eventDate, EventStatus eventStatus,
-                 double ticketPrice, EventType eventType, LocalDateTime createdDate,
-                 LocalDateTime modifiedDate, List<User> participants,User organizer) {
+    public Event(String eventName,
+                 String eventDescription,
+                 String location,
+                 int maxAttendees,
+                 LocalDate eventDate,
+                 EventStatus eventStatus,
+                 double ticketPrice,
+                 EventTarget eventTarget,
+                 LocalDateTime createdDate,
+                 LocalDateTime modifiedDate,
+                 List<User> participants,
+                 User organizer)
+    {
         this.eventName = eventName;
         this.eventDescription = eventDescription;
         this.location = location;
@@ -66,7 +72,7 @@ public class Event {
         this.eventDate = eventDate;
         this.eventStatus = eventStatus;
         this.ticketPrice = ticketPrice;
-        this.eventType = eventType;
+        this.eventTarget = eventTarget;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
         this.participants = participants;

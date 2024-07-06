@@ -10,11 +10,9 @@ import org.hibernate.validator.constraints.Length;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthenticationRequest {
-
     @Length(min = 5,max = 10)
     @NotBlank
     private String username;
-
 
     @Length(min = 5)
     @NotBlank

@@ -3,6 +3,7 @@ package com.marcinsz.eventmanagementsystem.configuration;
 import com.marcinsz.eventmanagementsystem.filter.JwtAuthenticationFilter;
 import com.marcinsz.eventmanagementsystem.service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -16,25 +17,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.reactive.function.client.WebClient;
+
 @EnableAsync
 @Configuration
+@EnableCaching
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final UserDetailsImpl userDetailsImpl;
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests(registry -> {
                     registry.requestMatchers("/users/**").permitAll();
-                    registry.requestMatchers("/login").permitAll();
-                    registry.requestMatchers("/weather/**").permitAll();
+                    registry.requestMatchers("/login/").permitAll();
+                    registry.requestMatchers("/weather").hasAnyRole("USER","ADMIN");
                     registry.requestMatchers("/swagger-ui/**").permitAll();
                     registry.requestMatchers("/v3/api-docs/**").permitAll();
-                    registry.requestMatchers("/events**").hasAnyRole("USER","ADMIN");
+                    registry.requestMatchers("/events").hasAnyRole("USER","ADMIN");
                     registry.anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
@@ -53,6 +54,11 @@ public class SecurityConfig {
         @Bean
         public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+        }
+
+        @Bean
+        public WebClient webClient(){
+        return WebClient.create();
         }
 
 }

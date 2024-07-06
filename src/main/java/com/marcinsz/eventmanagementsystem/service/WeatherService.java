@@ -1,8 +1,9 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.api.WeatherFromApi;
+import com.marcinsz.eventmanagementsystem.configuration.WeatherApiConfig;
 import com.marcinsz.eventmanagementsystem.dto.WeatherDto;
-import com.marcinsz.eventmanagementsystem.exception.EventException;
+import com.marcinsz.eventmanagementsystem.exception.EventForecastTooEarlyException;
 import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.WeatherMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
@@ -22,22 +23,21 @@ public class WeatherService {
 
     private final WebClient webClient;
     private final EventRepository eventRepository;
-    private final PolishCharactersRemover polishCharactersRemover;
+    private final PolishCharactersMapper polishCharactersMapper;
+    private final WeatherApiConfig weatherApiConfig;
 
     public WeatherDto weatherFromApi(Long eventId) throws Throwable {
         Event foundEvent = eventRepository.findById(eventId)
                 .orElseThrow((Supplier<Throwable>) () ->
                         new EventNotFoundException(eventId));
         if(validateDate(foundEvent.getEventDate())){
-           throw new EventException();
+           throw new EventForecastTooEarlyException("You can check the forecast only 14 days before the event.");
         }
-            String apiKey = "7e546b0a93e0436896c160950242605";
-            String baseUrl = "https://api.weatherapi.com/v1/forecast.json";
             return webClient.get()
-                    .uri(uriBuilder -> UriComponentsBuilder.fromUriString(baseUrl)
-                            .queryParam("q", polishCharactersRemover.removePolishCharacters(foundEvent.getLocation()))
+                    .uri(uriBuilder -> UriComponentsBuilder.fromUriString(weatherApiConfig.getBaseUrl())
+                            .queryParam("q", polishCharactersMapper.removePolishCharacters(foundEvent.getLocation()))
                             .queryParam("dt", foundEvent.getEventDate())
-                            .queryParam("key", apiKey)
+                            .queryParam("key", weatherApiConfig.getApiKey())
                             .build().toUri())
                     .header("accept", "application/json")
                     .retrieve()

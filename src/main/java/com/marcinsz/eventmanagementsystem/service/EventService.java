@@ -8,6 +8,7 @@ import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
+import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
@@ -23,27 +24,27 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
 public class EventService {
-
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
-    private final EventMapper eventMapper;
-    private final UserMapper userMapper;
 
 
     @CacheEvict(cacheNames = "events", allEntries = true)
     @Transactional
     public EventDto createEvent(CreateEventRequest createEventRequest, User user) {
-        Event event = eventMapper.convertCreateEventRequestToEvent(createEventRequest);
+        Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
         event.setOrganizer(user);
         eventRepository.save(event);
-        EventDto eventDto = eventMapper.createEventDtoFromRequest(createEventRequest,user);
-        kafkaMessageProducer.sendMessageToTopic(eventDto);
+        EventDto eventDto = EventMapper.convertCreateEventRequestToEventDto(createEventRequest,user);
+        kafkaMessageProducer.sendCreatedEventMessageToAllEventsTopic(eventDto);
         return eventDto;
     }
 
@@ -54,43 +55,51 @@ public class EventService {
         String organiserUsername = foundEvent.getOrganizer().getUsername();
         String usernameExtractedFromToken = jwtService.extractUsername(token);
 
+        String eventName = updateEventRequest.getEventName();
+        String eventDescription = updateEventRequest.getEventDescription();
+        String location = updateEventRequest.getLocation();
+        Integer maxAttendees = updateEventRequest.getMaxAttendees();
+        LocalDate eventDate = updateEventRequest.getEventDate();
+        Double ticketPrice = updateEventRequest.getTicketPrice();
+        EventTarget eventTarget = updateEventRequest.getEventTarget();
+
         if(!organiserUsername.equals(usernameExtractedFromToken)){
             throw new NotYourEventException();
         }
 
-        if(updateEventRequest.getEventName() != null && !updateEventRequest.getEventName().isEmpty()){
-            foundEvent.setEventName(updateEventRequest.getEventName());
+        if(eventName != null && !eventName.isEmpty()){
+            foundEvent.setEventName(eventName);
         }
-        if(updateEventRequest.getEventDescription() != null && !updateEventRequest.getEventDescription().isEmpty()){
-            foundEvent.setEventDescription(updateEventRequest.getEventDescription());
+        if(eventDescription != null && !eventDescription.isEmpty()){
+            foundEvent.setEventDescription(eventDescription);
         }
-        if(updateEventRequest.getLocation() != null && !updateEventRequest.getLocation().isEmpty()){
-            foundEvent.setLocation(updateEventRequest.getLocation());
+        if(location != null && !location.isEmpty()){
+            foundEvent.setLocation(location);
         }
-        if(updateEventRequest.getMaxAttendees() != null){
-            foundEvent.setMaxAttendees(updateEventRequest.getMaxAttendees());
+        if(maxAttendees != null){
+            foundEvent.setMaxAttendees(maxAttendees);
         }
-        if(updateEventRequest.getEventDate() != null){
-            foundEvent.setEventDate(updateEventRequest.getEventDate());
+        if(eventDate != null){
+            foundEvent.setEventDate(eventDate);
         }
-        if(updateEventRequest.getTicketPrice() != null){
-            foundEvent.setTicketPrice(updateEventRequest.getTicketPrice());
+        if(ticketPrice != null){
+            foundEvent.setTicketPrice(ticketPrice);
         }
-        if(updateEventRequest.getEventType() != null){
-            foundEvent.setEventType(updateEventRequest.getEventType());
+        if(eventTarget != null){
+            foundEvent.setEventTarget(eventTarget);
         }
 
         foundEvent.setModifiedDate(LocalDateTime.now());
 
         eventRepository.save(foundEvent);
-        return eventMapper.convertEventToEventDto(foundEvent);
+        return EventMapper.convertEventToEventDto(foundEvent);
     }
 
     @Cacheable(cacheNames = "events")
     public List<EventDto> showAllOrganizerEvents(String username){
         User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
         List<Event> allByOrganizer = eventRepository.findAllByOrganizer(user);
-        return eventMapper.convertListEventToListEventDto(allByOrganizer);
+        return EventMapper.convertListEventToListEventDto(allByOrganizer);
 
     }
 
@@ -106,7 +115,7 @@ public class EventService {
         Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
         User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(joinEventRequest.email));
 
-        userMapper.convertUserToUserDto(user);
+        UserMapper.convertUserToUserDto(user);
         if(foundEvent.getParticipants().contains(user)){
             throw new IllegalArgumentException("You already joined to this event!");
         } else if (!isUserAdult(user.getBirthDate())) {
@@ -131,7 +140,9 @@ public class EventService {
         String organiserUsername = eventToDelete.getOrganizer().getUsername();
         String usernameLoggedUser = jwtService.extractUsername(token);
         String eventName = eventToDelete.getEventName();
-
+        EventDto eventDto = EventMapper.convertEventToEventDto(eventToDelete);
+        eventDto.setEventStatus(EventStatus.CANCELLED);
+        kafkaMessageProducer.sendCancelledMessageToEventCancelledTopic(eventDto);
         if(!usernameLoggedUser.equals(organiserUsername)){
             throw new IllegalArgumentException("You can delete your events only!");
         }
@@ -139,7 +150,11 @@ public class EventService {
         return eventName;
     }
 
-    public boolean isUserAdult(LocalDate dateOfBirth){
+    boolean isUserAdult(LocalDate dateOfBirth){
         return dateOfBirth.isBefore(LocalDate.now().minusYears(18));
     }
+    public User findByUsername(String username){
+        return userRepository.findByUsername(username).orElseThrow();
+    }
+
 }

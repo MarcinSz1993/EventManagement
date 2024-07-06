@@ -12,9 +12,7 @@ import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,8 +39,6 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     AuthenticationManager authenticationManager;
-    @Mock
-    UserMapper userMapper;
 
     @BeforeEach
     void setUp() {
@@ -79,7 +75,7 @@ class UserServiceTest {
                 .build();
 
         UserDto userDto = UserDto.builder()
-                .user_id(1L)
+                .userId(1L)
                 .firstName("John")
                 .lastName("Smith")
                 .email("john@smith.com")
@@ -90,16 +86,19 @@ class UserServiceTest {
                 .accountNumber("1234567890")
                 .accountStatus("ACTIVE")
                 .build();
+        try (MockedStatic<UserMapper> mockedStatic = Mockito.mockStatic(UserMapper.class)) {
+            mockedStatic.when(() -> UserMapper.convertCreateUserRequestToUser(createUserRequest)).thenReturn(user);
 
-            when(userMapper.convertCreateUserRequestToUser(createUserRequest)).thenReturn(user);
+
             when(passwordEncoder.encode(createUserRequest.getPassword())).thenReturn("encodedPassword");
             when(userRepository.save(user)).thenReturn(user);
-            when(userMapper.convertUserToUserDto(user)).thenReturn(userDto);
+            mockedStatic.when(() -> UserMapper.convertUserToUserDto(user)).thenReturn(userDto);
             when(jwtService.generateToken(user)).thenReturn("MockedToken");
+
 
             CreateUserResponse createUserResponse = userService.createUser(createUserRequest);
 
-            assertEquals(1L, createUserResponse.getUserDto().getUser_id());
+            assertEquals(1L, createUserResponse.getUserDto().getUserId());
             assertEquals("John", createUserResponse.getUserDto().getFirstName());
             assertEquals("Smith", createUserResponse.getUserDto().getLastName());
             assertEquals("john@smith.com", createUserResponse.getUserDto().getEmail());
@@ -110,7 +109,7 @@ class UserServiceTest {
             assertEquals("1234567890", createUserResponse.getUserDto().getAccountNumber());
             assertEquals("ACTIVE", createUserResponse.getUserDto().getAccountStatus());
             assertEquals("MockedToken", createUserResponse.getToken());
-
+        }
     }
     @Test
     public void createUserShouldThrowNullPointerExceptionWithCommunicateWhenInputIsNull(){

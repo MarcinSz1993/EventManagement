@@ -1,6 +1,6 @@
 package com.marcinsz.eventmanagementsystem.request;
 
-import com.marcinsz.eventmanagementsystem.model.EventType;
+import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -26,6 +26,6 @@ public class CreateEventRequest {
     private LocalDate eventDate;
     @PositiveOrZero(message = "A price must not be below 0")
     private double ticketPrice;
-    @NotNull(message = "Event type is required")
-    private EventType eventType;
+    @NotNull(message = "Event target is required")
+    private EventTarget eventTarget;
 }

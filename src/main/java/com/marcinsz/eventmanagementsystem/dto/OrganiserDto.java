@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganiserDto {
-
     private String firstName;
     private String lastName;
     private String userName;

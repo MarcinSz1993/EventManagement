@@ -4,7 +4,6 @@ import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.exception.BadCredentialsException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
-import com.marcinsz.eventmanagementsystem.mapper.UserMapperMapStruct;
 import com.marcinsz.eventmanagementsystem.model.AuthenticationResponse;
 import com.marcinsz.eventmanagementsystem.model.CreateUserResponse;
 import com.marcinsz.eventmanagementsystem.model.User;
@@ -22,25 +21,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final UserMapper userMapper;
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest createUserRequest){
         if(createUserRequest == null){
             throw new NullPointerException("CreateUserRequest cannot be null!");
         }
-
-        User newUser = userMapper.convertCreateUserRequestToUser(createUserRequest);
+        User newUser = UserMapper.convertCreateUserRequestToUser(createUserRequest);
         newUser.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         userRepository.save(newUser);
-
-
-        UserDto userDto = userMapper.convertUserToUserDto(newUser);
-
+        UserDto userDto = UserMapper.convertUserToUserDto(newUser);
         String token = jwtService.generateToken(newUser);
 
         return new CreateUserResponse(userDto,token);
@@ -61,6 +54,4 @@ public class UserService {
         String token = jwtService.generateToken(user);
         return new AuthenticationResponse(token);
     }
-
-
 }

@@ -1,6 +1,6 @@
 package com.marcinsz.eventmanagementsystem.model;
 
-public enum EventType {
+public enum EventTarget {
     FAMILY,
     SINGLES,
     CHILDREN,

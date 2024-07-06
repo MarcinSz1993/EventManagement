@@ -5,21 +5,19 @@ import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
-@RequiredArgsConstructor
+@Data
+@NoArgsConstructor
 public class EventMapper {
 
-    private final UserMapper userMapper;
-
-    public EventDto convertEventToEventDto(Event event) {
+    public static EventDto convertEventToEventDto(Event event){
         return new EventDto(
                 event.getEventName(),
                 event.getEventDescription(),
@@ -28,49 +26,44 @@ public class EventMapper {
                 event.getEventDate(),
                 event.getEventStatus(),
                 event.getTicketPrice(),
-                event.getEventType(),
+                event.getEventTarget(),
                 event.getCreatedDate(),
-                userMapper.convertUserToOrganiserDto(event.getOrganizer()),
-                userMapper.convertListUserToListUserDto(event.getParticipants())
-        );
+                UserMapper.convertUserToOrganiserDto(event.getOrganizer()),
+                UserMapper.convertListUserToListUserDto(event.getParticipants()));
     }
 
-    public Event convertCreateEventRequestToEvent(CreateEventRequest createEventRequest) {
-        return new Event(
-                createEventRequest.getEventName(),
+    public static Event convertCreateEventRequestToEvent(CreateEventRequest createEventRequest){
+        return new Event(createEventRequest.getEventName(),
                 createEventRequest.getEventDescription(),
                 createEventRequest.getLocation(),
                 createEventRequest.getMaxAttendees(),
                 createEventRequest.getEventDate(),
                 EventStatus.ACTIVE,
                 createEventRequest.getTicketPrice(),
-                createEventRequest.getEventType(),
+                createEventRequest.getEventTarget(),
                 LocalDateTime.now(),
                 null,
                 null,
-                null
-        );
+                null);
     }
 
-    public EventDto createEventDtoFromRequest(CreateEventRequest createEventRequest, User user) {
-        return new EventDto(
-                createEventRequest.getEventName(),
-                createEventRequest.getEventDescription(),
-                createEventRequest.getLocation(),
-                createEventRequest.getMaxAttendees(),
-                createEventRequest.getEventDate(),
-                EventStatus.ACTIVE,
-                createEventRequest.getTicketPrice(),
-                createEventRequest.getEventType(),
-                LocalDateTime.now(),
-                userMapper.convertUserToOrganiserDto(user),
-                Collections.emptyList()
-        );
+    public static EventDto convertCreateEventRequestToEventDto(CreateEventRequest createEventRequest, User user){
+        return EventDto.builder()
+                .eventName(createEventRequest.getEventName())
+                .eventDescription(createEventRequest.getEventDescription())
+                .eventLocation(createEventRequest.getLocation())
+                .maxAttendees(createEventRequest.getMaxAttendees())
+                .eventDate(createEventRequest.getEventDate())
+                .eventStatus(EventStatus.ACTIVE)
+                .ticketPrice(createEventRequest.getTicketPrice())
+                .eventTarget(createEventRequest.getEventTarget())
+                .createdDate(LocalDateTime.now())
+                .organiser(UserMapper.convertUserToOrganiserDto(user))
+                .participants(Collections.emptyList())
+                .build();
     }
-
-    public List<EventDto> convertListEventToListEventDto(List<Event> eventList) {
-        return eventList.stream()
-                .map(this::convertEventToEventDto)
-                .collect(Collectors.toList());
+    public static List<EventDto> convertListEventToListEventDto(List<Event> eventList){
+       return eventList.stream()
+                .map(EventMapper::convertEventToEventDto).collect(Collectors.toList());
     }
 }

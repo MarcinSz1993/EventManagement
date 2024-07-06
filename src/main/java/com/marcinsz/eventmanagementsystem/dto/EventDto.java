@@ -1,7 +1,7 @@
 package com.marcinsz.eventmanagementsystem.dto;
 
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
-import com.marcinsz.eventmanagementsystem.model.EventType;
+import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +23,7 @@ public class EventDto {
     private LocalDate eventDate;
     private EventStatus eventStatus;
     private double ticketPrice;
-    private EventType eventType;
+    private EventTarget eventTarget;
     private LocalDateTime createdDate;
     private OrganiserDto organiser;
     private List<UserDto> participants;
