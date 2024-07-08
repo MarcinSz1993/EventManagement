@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Event Notification</title>
+    <style>
+        body {
+            background-color: aliceblue;
+
+        }
+        h1{
+            align-content: space-around;
+            font-family: Verdana;
+            font-size: large;
+            color: rebeccapurple;
+            padding: 0;
+        }
+        ul{
+            list-style-type: none;
+            padding: 0;
+        }
+        li{
+            font-weight: bold;
+        }
+        p{
+            font-weight: bolder;
+            font-size: large;
+            color: blue;
+            padding-top: 0;
+        }
+    </style>
+</head>
+<body>
+<h1>New event for you is waiting! <span th:text="${eventName}"></span></h1>
+<p>Event details:</p>
+<ul>
+    <li>Name: <span th:text="${eventName}"></span></li>
+    <li>Description: <span th:text="${eventDescription}"></span></li>
+    <li>Location: <span th:text="${eventLocation}"></span></li>
+    <li>Date: <span th:text="${eventDate}"></span></li>
+    <li>Organiser: <span th:text="${organiserFirstName} + ' ' + ${organiserLastName}"></span></li>
+    <li>Username: <span th:text="${organiserUserName}"></span></li>
+    <li>Phone: <span th:text="${organiserPhoneNumber}"></span></li>
+</ul>
+</body>
+</html>
