@@ -35,7 +35,6 @@ public class EventController {
     @PutMapping
     public ResponseEntity<EventDto> updateEvent(@RequestBody UpdateEventRequest updateEventRequest, @RequestParam Long eventId, @CookieValue String token) {
         EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, token);
-
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
     }
 

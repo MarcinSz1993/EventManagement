@@ -15,7 +15,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -26,10 +25,8 @@ public class WeatherService {
     private final PolishCharactersMapper polishCharactersMapper;
     private final WeatherApiConfig weatherApiConfig;
 
-    public WeatherDto weatherFromApi(Long eventId) throws Throwable {
-        Event foundEvent = eventRepository.findById(eventId)
-                .orElseThrow((Supplier<Throwable>) () ->
-                        new EventNotFoundException(eventId));
+    public WeatherDto weatherFromApi(Long eventId) {
+        Event foundEvent = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
         if(validateDate(foundEvent.getEventDate())){
            throw new EventForecastTooEarlyException("You can check the forecast only 14 days before the event.");
         }
