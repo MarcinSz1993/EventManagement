@@ -1,7 +1,10 @@
+## As the project is still under development, please switch to the 'dev' branch to view the code.
 <body>
+
 This application is designed for the organization and management of events. It allows users to create, update, and manage events while enabling participants to join these events.
 The system ensures secure user authentication and authorization through JWT and provides a clean separation of user data via DTOs for improved privacy.
-Additionally, the application connects to an external weather API to allow users to check the weather forecast for the event day. <br><br>
+Additionally, the application connects to an external weather API to allow users to check the weather forecast for the event day.The application also integrates with Kafka
+to send event information to a Kafka server. Subsequently, it automatically sends emails to adult users about upcoming events tailored for adults, ensuring timely notifications and engagement. <br><br>
 
 
 <h1>A short backend presentation of the app :</h1>
