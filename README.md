@@ -119,11 +119,42 @@ Example request:
   "participants": []
 }
 ```
+When you create an event it's automatically sending to Kafka server. In logs, you will see something like this:
+```html
+Sent message: EventDto(id=40, eventName=Example event, eventDescription=Here you can write all details about the event., eventLocation=Poznań, maxAttendees=10, eventDate=2024-08-30, eventStatus=ACTIVE, ticketPrice=20.0, eventTarget=FAMILY, createdDate=2024-07-25T20:44:26.298079200, organiser=OrganiserDto(firstName=Marcin, lastName=Kowalski, userName=Marcin2024, email=marcin@kowalski.pl, phoneNumber=563215675), participants=[])with offset: 3
+
+```
+and
+```html
+Event different from for adults only.
+```
+If created event will be for ADULTS_ONLY, application consume a message from Kafka topic and automatically will email to all registered adult users about the event.
+In logs, you will see for whom emails have been sent:
+```html
+Sent email to: [marcinsz1993@hotmail.com, jann@nowak.com, marcin@kowalski.pl]
+```
+A template of the message user will see in their mailbox will be like this:
+```html
+[Subject] New event for you is waiting Example event for adults
+
+Event details:
+
+    Name: Example event for adults
+    Description: Here you can write all details about the event.
+    Location: Łódź
+    Date: 2024-08-21
+    Organiser: Marcin Kowalski
+    Username: Marcin2024
+    Phone: 563215675
+```
 
 ### 4.Updating event:
-If you want to update your event you should type an id of the event and then you can change any field in the event. You can change one, all or few fields depends on you.
+If you want to update your event you should type an id of the event, and then you can change any field in the event. You can change one, all or few fields depends on you.
 WARNING: You must be an owner the event to update the event.<br>
 Example request(Suppose we want to change max attendees):
+```http request
+http://localhost:8080/events/?eventId=40
+```
 ```json
 {
   "maxAttendees": 10
@@ -152,10 +183,6 @@ Example response:
 }
 ```
 
-<h3>5.Join event:</h3>
-To join the event you have to type firstName, lastName, email and birthday.<br>
-<a href="https://ibb.co/znrwK4Q"><img src="https://i.ibb.co/tm45yJQ/join-Event.png" alt="join-Event" border="0"></a>
-<br>
 
 ### 5.Join event:
 To join the event you have to type eventName as a parameter and the email as a request body.<br>
@@ -169,8 +196,8 @@ http://localhost:8080/events/join?eventName=Example%20event.
 }
 ```
 Example response:
-```json
-"You joined to the event EXAMPLE EVENT.."
+```html
+You joined to the event EXAMPLE EVENT.
 ```
 
 ### 6.Checking weather:
@@ -203,8 +230,8 @@ Example request:
 http://localhost:8080/events/?eventId=36
 ```
 Example response:
-```json
-"You deleted event Example event."
+```html
+You deleted event Example event.
 ```
 
 
