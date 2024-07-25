@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   eventmanagement_database:
@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: EventManagementDB
-      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_PASSWORD: qwerty
     ports:
       - "5432:5432"
 
@@ -42,8 +42,9 @@ services:
       - zookeeper
 
     environment:
-      KAFKA_ADVERTISED_LISTENERS: localhost
+      KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
 
 
 volumes:

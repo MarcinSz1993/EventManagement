@@ -30,12 +30,14 @@ public class WeatherService {
         if(validateDate(foundEvent.getEventDate())){
            throw new EventForecastTooEarlyException("You can check the forecast only 14 days before the event.");
         }
-            return webClient.get()
-                    .uri(uriBuilder -> UriComponentsBuilder.fromUriString(weatherApiConfig.getBaseUrl())
-                            .queryParam("q", polishCharactersMapper.removePolishCharacters(foundEvent.getLocation()))
-                            .queryParam("dt", foundEvent.getEventDate())
-                            .queryParam("key", weatherApiConfig.getApiKey())
-                            .build().toUri())
+        String baseUrl = weatherApiConfig.getBaseUrl();
+        String fullUrl = UriComponentsBuilder.fromUriString(baseUrl)
+                .queryParam("q", polishCharactersMapper.removePolishCharacters(foundEvent.getLocation()))
+                .queryParam("dt", foundEvent.getEventDate())
+                .queryParam("key", weatherApiConfig.getApiKey())
+                .toUriString();
+        return webClient.get()
+                    .uri(fullUrl)
                     .header("accept", "application/json")
                     .retrieve()
                     .bodyToMono(WeatherFromApi.class)
