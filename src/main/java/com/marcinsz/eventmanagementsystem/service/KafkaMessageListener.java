@@ -1,6 +1,7 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
+import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -10,6 +11,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -23,8 +25,9 @@ public class KafkaMessageListener {
     @KafkaListener(topics = "${spring.kafka.config.allEventsTopic}", groupId = "${spring.kafka.config.group-id}")
     public void consumeCreateEventMessage(EventDto eventDto) throws MessagingException {
         if(eventDto.getEventTarget().equals(EventTarget.ADULTS_ONLY)){
+            List<String> usersEmails = usersEmail(LocalDate.now());
             notificationService.sendNotification(eventDto);
-            log.info(String.valueOf(eventDto));
+            log.info("Sent email to: {}", Arrays.toString(usersEmails.toArray()));
         } else {
             log.info("Event different than for adults only.");
         }
