@@ -8,7 +8,7 @@ ensuring timely notifications and engagement. <br><br>
 ### System requirements
 - Java 11 or higher
 - Maven
-- Docker (optional)
+- Docker
 
 ### Installation and running
 1.Clone the repo:
