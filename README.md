@@ -16,13 +16,17 @@ ensuring timely notifications and engagement. <br><br>
 ```bash
   git clone https://github.com/MarcinSz1993/EventManagement
 ```
-2.Go to directory of the project and build the project using command:
+2.Go to directory of the project and run Kafka server by using the command:
 ```bash
-mvn clean install
+docker-compose -f docker-compose-kafka.yml up -d
 ```
-3.Run the app using command:
+3.After Kafka is running build the project using command:
 ```bash
-mvn spring-boot:run
+  mvn clean install
+```
+4.Run the app using command:
+```bash
+  mvn spring-boot:run
 ```
 
 ### A short backend presentation of the app :
