@@ -40,7 +40,7 @@ public class EventService {
         Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
         event.setOrganizer(user);
         eventRepository.save(event);
-        EventDto eventDto = EventMapper.convertCreateEventRequestToEventDto(createEventRequest,user);
+        EventDto eventDto = EventMapper.convertCreateEventRequestToEventDto(createEventRequest,user, event.getId());
         kafkaMessageProducer.sendCreatedEventMessageToAllEventsTopic(eventDto);
         return eventDto;
     }

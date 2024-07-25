@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventDto {
+    private Long id;
     private String eventName;
     private String eventDescription;
     private String eventLocation;

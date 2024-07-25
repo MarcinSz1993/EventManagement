@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WeatherMapper {
     public static WeatherDto convertWeatherFromApiToWeatherDto(WeatherFromApi weatherFromApi) {
-        Day day = weatherFromApi.getForecast().getForecastday().get(0).getDay();
-        Astro astro = weatherFromApi.getForecast().getForecastday().get(0).getAstro();
+        Day day = weatherFromApi.getForecast().getForecastday().getFirst().getDay();
+        Astro astro = weatherFromApi.getForecast().getForecastday().getFirst().getAstro();
         Location location = weatherFromApi.getLocation();
-        Forecastday forecastday = weatherFromApi.getForecast().getForecastday().get(0);
+        Forecastday forecastday = weatherFromApi.getForecast().getForecastday().getFirst();
         return new WeatherDto(forecastday.getDate(),
                 location.getName(),
                 location.getCountry(),

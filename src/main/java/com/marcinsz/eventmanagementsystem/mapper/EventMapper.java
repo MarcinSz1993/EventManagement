@@ -19,6 +19,7 @@ public class EventMapper {
 
     public static EventDto convertEventToEventDto(Event event){
         return new EventDto(
+                event.getId(),
                 event.getEventName(),
                 event.getEventDescription(),
                 event.getLocation(),
@@ -47,8 +48,9 @@ public class EventMapper {
                 null);
     }
 
-    public static EventDto convertCreateEventRequestToEventDto(CreateEventRequest createEventRequest, User user){
+    public static EventDto convertCreateEventRequestToEventDto(CreateEventRequest createEventRequest, User user,Long eventId){
         return EventDto.builder()
+                .id(eventId)
                 .eventName(createEventRequest.getEventName())
                 .eventDescription(createEventRequest.getEventDescription())
                 .eventLocation(createEventRequest.getLocation())
