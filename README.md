@@ -84,7 +84,7 @@ Example response:
 }
 ```
 
-### 3.Creating event:
+### *3.Creating event:
 To create an event you need to fill all required fields and of course you must be logged in. The event name must be unique. As a response you get info about created event, organiser and list of participants.
 Example request:
 ```json
@@ -119,6 +119,27 @@ Example request:
   "participants": []
 }
 ```
+There is also a second way to create events. You can upload a CSV file from your machine and the app will do rest job for you.
+The file must be in CSV format and must contain exactly 7 headers seperated by comma.
+
+A sample of correct CSV file:
+```html
+eventname,eventdescription,location,maxattendees,eventdate,ticketprice,eventtarget
+Tech Conference 2024,Annual tech conference featuring industry leaders,San Francisco,500,2024-10-15,199.99,ADULTS_ONLY
+Art Exhibition: Modern Art,Showcase of contemporary artworks,New York City,200,2024-09-05,29.99,ADULTS_ONLY
+Charity Gala 2024,Fancy gala dinner to support local charities,Los Angeles,300,2024-12-01,299.99,FAMILY
+```
+
+In this way you can add many events in one time.
+Uploading the file is under the endpoint:
+```http request
+http://localhost:8080/csv/uploadEvents
+```
+The response is number of added events:
+```html
+Added 3 events
+```
+
 When you create an event it's automatically sending to Kafka server. In logs, you will see something like this:
 ```html
 Sent message: EventDto(id=40, eventName=Example event, eventDescription=Here you can write all details about the event., eventLocation=Poznań, maxAttendees=10, eventDate=2024-08-30, eventStatus=ACTIVE, ticketPrice=20.0, eventTarget=FAMILY, createdDate=2024-07-25T20:44:26.298079200, organiser=OrganiserDto(firstName=Marcin, lastName=Kowalski, userName=Marcin2024, email=marcin@kowalski.pl, phoneNumber=563215675), participants=[])with offset: 3
