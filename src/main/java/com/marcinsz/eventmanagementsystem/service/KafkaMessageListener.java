@@ -1,7 +1,6 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
-import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -36,12 +35,9 @@ public class KafkaMessageListener {
     @KafkaListener(topics = "${spring.kafka.config.cancelledEventsTopic}",groupId = "${spring.kafka.config.group-id}")
     public void consumeEventCancelledMessage(EventDto eventDto) throws MessagingException {
         notificationService.sendNotification(eventDto);
-
-
     }
 
     public List<String> usersEmail(LocalDate date){
         return userRepository.getEmailsFromAdultUsers(date);
-
     }
 }

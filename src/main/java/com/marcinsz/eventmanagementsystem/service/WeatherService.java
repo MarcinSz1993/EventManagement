@@ -9,6 +9,8 @@ import com.marcinsz.eventmanagementsystem.mapper.WeatherMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -38,7 +40,7 @@ public class WeatherService {
                 .toUriString();
         return webClient.get()
                     .uri(fullUrl)
-                    .header("accept", "application/json")
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                     .retrieve()
                     .bodyToMono(WeatherFromApi.class)
                     .map(WeatherMapper::convertWeatherFromApiToWeatherDto)

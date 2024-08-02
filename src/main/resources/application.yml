@@ -7,12 +7,12 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   liquibase:
-    enabled: true
+    enabled: false
     change-log: classpath:db/changelog/changelog-master.xml
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -61,5 +61,5 @@ spring:
 
 weather:
   api:
-    apiKey: 7e546b0a93e0436896c160950242605
+    apiKey: 80748648b31e475ba43112900240208
     baseUrl: https://api.weatherapi.com/v1/forecast.json

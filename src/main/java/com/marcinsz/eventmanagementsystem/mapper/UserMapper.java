@@ -1,5 +1,6 @@
 package com.marcinsz.eventmanagementsystem.mapper;
 
+import com.marcinsz.eventmanagementsystem.csv.UserCsvRepresentation;
 import com.marcinsz.eventmanagementsystem.dto.OrganiserDto;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.model.Role;
@@ -66,5 +67,22 @@ public class UserMapper {
         return userList.stream()
                 .map(UserMapper::convertUserToUserDto)
                 .toList();
+    }
+
+    public static User convertUserCsvRepresentationToUser(UserCsvRepresentation userCsvRepresentation){
+        return User.builder()
+                .firstName(userCsvRepresentation.getFirstname())
+                .lastName(userCsvRepresentation.getLastname())
+                .email(userCsvRepresentation.getEmail())
+                .username(userCsvRepresentation.getUsername())
+                .password("qwerty")
+                .birthDate(userCsvRepresentation.getBirthDate())
+                .role(Role.USER)
+                .phoneNumber(userCsvRepresentation.getPhoneNumber())
+                .accountNumber(userCsvRepresentation.getAccountNumber())
+                .accountStatus("ACTIVE")
+                .events(Collections.emptyList())
+                .organizedEvents(Collections.emptyList())
+                .build();
     }
 }

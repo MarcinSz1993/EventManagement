@@ -34,9 +34,9 @@ create table if not exists event
         constraint event_event_status_check
             check ((event_status)::text = ANY
                    ((ARRAY ['ACTIVE'::character varying, 'COMPLETED'::character varying, 'CANCELLED'::character varying])::text[])),
-    event_type        varchar(255)
+    event_target        varchar(255)
         constraint event_event_type_check
-            check ((event_type)::text = ANY
+            check ((event_target)::text = ANY
                    ((ARRAY ['FAMILY'::character varying, 'SINGLES'::character varying, 'CHILDREN'::character varying, 'EVERYBODY'::character varying, 'ADULTS_ONLY'::character varying])::text[])),
     location          varchar(255)
 );

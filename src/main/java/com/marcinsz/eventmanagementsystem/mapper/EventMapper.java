@@ -1,6 +1,8 @@
 package com.marcinsz.eventmanagementsystem.mapper;
 
+import com.marcinsz.eventmanagementsystem.csv.EventCsvRepresentation;
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
+import com.marcinsz.eventmanagementsystem.exception.WrongFileException;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
 import com.marcinsz.eventmanagementsystem.model.User;
@@ -67,5 +69,25 @@ public class EventMapper {
     public static List<EventDto> convertListEventToListEventDto(List<Event> eventList){
        return eventList.stream()
                 .map(EventMapper::convertEventToEventDto).collect(Collectors.toList());
+    }
+
+    public static Event convertEventCsvRepresentationToEvent(EventCsvRepresentation eventCsvRepresentation){
+        if(eventCsvRepresentation == null){
+            throw new WrongFileException();
+        }
+       return    Event.builder()
+                .eventName(eventCsvRepresentation.getEventName())
+                .eventDescription(eventCsvRepresentation.getEventDescription())
+                .location(eventCsvRepresentation.getLocation())
+                .maxAttendees(eventCsvRepresentation.getMaxAttendees())
+                .eventDate(eventCsvRepresentation.getEventDate())
+                .eventStatus(EventStatus.ACTIVE)
+                .ticketPrice(eventCsvRepresentation.getTicketPrice())
+                .eventTarget(eventCsvRepresentation.getEventTarget())
+                .createdDate(LocalDateTime.now())
+                .modifiedDate(null)
+                .participants(Collections.emptyList())
+                .organizer(new User())
+                .build();
     }
 }
