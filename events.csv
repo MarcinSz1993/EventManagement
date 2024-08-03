@@ -1,0 +1,11 @@
+eventname,eventdescription,location,maxattendees,eventdate,ticketprice,eventtarget
+Tech Conference 2024,Annual tech conference featuring industry leaders,San Francisco,500,2024-10-15,199.99,ADULTS_ONLY
+Art Exhibition: Modern Art,Showcase of contemporary artworks,New York City,200,2024-09-05,29.99,ADULTS_ONLY
+Charity Gala 2024,Fancy gala dinner to support local charities,Los Angeles,300,2024-12-01,299.99,FAMILY
+Music Festival Summer Beats,A multi-day festival with live performances from top bands,Chicago,1000,2024-09-22,79.99,EVERYBODY
+Startup Pitch Night,Event for new startups to pitch their ideas to investors,Boston,150,2024-08-10,49.99,ADULTS_ONLY
+Food & Wine Expo,Exhibition of gourmet foods and wines from around the world,San Diego,250,2024-11-20,89.99,ADULTS_ONLY
+Science Fair 2024,Annual fair featuring science projects from local students,Houston,400,2024-08-15,15.00,CHILDREN
+Outdoor Adventure Camp,Weekend camp focused on outdoor activities and adventure,Denver,50,2024-10-30,149.99,FAMILY
+Book Launch: New Novel,Launch event for the release of a new bestselling novel,Seattle,100,2024-09-12,24.99,ADULTS_ONLY
+Film Festival: Indie Shorts,Showcase of independent short films,Louisville,120,2024-10-22,14.99,ADULTS_ONLY
