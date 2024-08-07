@@ -1,3 +1,7 @@
+--liquibase formatted sql
+
+--changeset MarcinSz1993:1
+
 create table if not exists app_user
 (
     birth_date     date,
@@ -18,6 +22,7 @@ create table if not exists app_user
             check ((role)::text = ANY ((ARRAY ['USER'::character varying, 'ADMIN'::character varying])::text[]))
 );
 
+--changeset MarcinSz1993:2
 
 create table if not exists event
 (
@@ -41,7 +46,7 @@ create table if not exists event
     location          varchar(255)
 );
 
-
+--changeset MarcinSz1993:3
 create table if not exists participants_events
 (
     event_id bigint not null

@@ -3,6 +3,7 @@ package com.marcinsz.eventmanagementsystem.csv;
 import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvDate;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventCsvRepresentation {
+    @Column(unique = true)
     @CsvBindByName(column = "eventname")
     private String eventName;
     @CsvBindByName(column = "eventdescription")
