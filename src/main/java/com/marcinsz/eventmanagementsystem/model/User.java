@@ -23,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
 
     private Long id;
     private String firstName;
@@ -50,6 +50,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "organizer")
     @JsonManagedReference
     private List<Event> organizedEvents;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Review> reviews;
 
     public User(String firstName, String lastName, String email,String username,
                 String password, LocalDate birthDate, Role role,

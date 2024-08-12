@@ -30,7 +30,6 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests(registry -> {
-                    //registry.requestMatchers("/csv/uploadEvents").hasAnyRole("USER","ADMIN");
                     registry.requestMatchers("/csv/uploadUsers").permitAll();
                     registry.requestMatchers("/users/**").permitAll();
                     registry.requestMatchers("/login/").permitAll();
@@ -38,6 +37,7 @@ public class SecurityConfig {
                     registry.requestMatchers("/swagger-ui/**").permitAll();
                     registry.requestMatchers("/v3/api-docs/**").permitAll();
                     registry.requestMatchers("/events").hasAnyRole("USER","ADMIN");
+                    registry.requestMatchers("reviews/delete/").hasRole("ADMIN");
                     registry.anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)

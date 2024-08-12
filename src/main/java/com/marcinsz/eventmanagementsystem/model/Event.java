@@ -52,6 +52,10 @@ public class Event {
     @JoinColumn(name = "organizer_id")
     @JsonBackReference
     private User organizer;
+
+    @OneToMany(mappedBy = "event")
+    private List<Review> reviews;
+
     public Event(String eventName,
                  String eventDescription,
                  String location,

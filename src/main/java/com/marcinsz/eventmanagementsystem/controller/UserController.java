@@ -24,7 +24,6 @@ public class UserController {
     @PostMapping
     public CreateUserResponse createUser(@RequestBody @Valid CreateUserRequest createUserRequest,
                                          HttpServletResponse servletResponse){
-
         CreateUserResponse userResponse = userService.createUser(createUserRequest);
         String token = userResponse.getToken();
         addTokenToCookie(token,servletResponse);
@@ -34,7 +33,6 @@ public class UserController {
     @PostMapping("/login")
     public AuthenticationResponse login(@RequestBody @Valid AuthenticationRequest authenticationRequest,
                                         HttpServletResponse servletResponse) {
-
         AuthenticationResponse login = userService.login(authenticationRequest);
         String token = login.getToken();
         addTokenToCookie(token,servletResponse);

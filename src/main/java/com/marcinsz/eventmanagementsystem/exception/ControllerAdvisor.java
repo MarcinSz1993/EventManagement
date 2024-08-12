@@ -64,4 +64,26 @@ public class ControllerAdvisor {
     public String wrongFileExceptionHandler(Exception ex){
         return ex.getMessage();
     }
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    @ExceptionHandler(UserNotParticipantException.class)
+    public String userNotParticipantExceptionHandler(Exception ex){
+        return ex.getMessage();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ReviewAlreadyWrittenException.class)
+    public String reviewAlreadyWrittenExceptionHandler(Exception ex){
+        return ex.getMessage();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(EventNotFinishedException.class)
+    public String eventNotFinishedExceptionHandler(Exception ex){
+        return ex.getMessage();
+    }
 }
+
+
