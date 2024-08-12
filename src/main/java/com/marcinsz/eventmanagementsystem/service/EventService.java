@@ -17,8 +17,10 @@ import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,13 +28,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
-
 
     @CacheEvict(cacheNames = "events", allEntries = true)
     @Transactional
@@ -147,11 +149,22 @@ public class EventService {
         return eventName;
     }
 
+    @Scheduled(cron = "0 0 0 * * ? ")
+    public void updateEventsStatuses(){
+        List<Event> activeEventsList = eventRepository.findAllByActiveEventStatus(EventStatus.ACTIVE);
+        activeEventsList.forEach(event -> {
+            if (event.getEventDate().isBefore(LocalDate.now())) {
+                event.setEventStatus(EventStatus.COMPLETED);
+            }
+        });
+        eventRepository.saveAll(activeEventsList);
+        log.info("Event statuses have been updated");
+    }
+
     boolean isUserAdult(LocalDate dateOfBirth){
         return dateOfBirth.isBefore(LocalDate.now().minusYears(18));
     }
     public User findByUsername(String username){
         return userRepository.findByUsername(username).orElseThrow();
     }
-
 }
