@@ -52,6 +52,7 @@ public class User implements UserDetails {
     private List<Event> organizedEvents;
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Review> reviews;
 
     public User(String firstName, String lastName, String email,String username,

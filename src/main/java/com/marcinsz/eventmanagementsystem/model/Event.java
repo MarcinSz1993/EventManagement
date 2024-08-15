@@ -54,6 +54,7 @@ public class Event {
     private User organizer;
 
     @OneToMany(mappedBy = "event")
+    @JsonManagedReference
     private List<Review> reviews;
 
     public Event(String eventName,
