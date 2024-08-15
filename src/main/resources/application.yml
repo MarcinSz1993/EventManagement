@@ -1,9 +1,14 @@
 spring:
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/EventManagementDB
     username: postgres
-    password: qwerty
+    password: ${PG_PASS:qwerty}
     driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
 
   jpa:
     hibernate:
@@ -15,6 +20,46 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-  liquibase:
-    change-log: classpath:db/changelog/changelog-master.xml
-    enabled: true
+  jackson:
+    property-naming-strategy: LOWER_CAMEL_CASE
+
+
+  kafka:
+    config:
+      allEventsTopic: "allEvents"
+      cancelledEventsTopic: "cancelledEvents"
+      groupId: "EventManagement-group"
+
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.trusted.packages: '*'
+
+
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: events-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+    bootstrap-servers: localhost:9092
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: marcinjavadev93@gmail.com
+    password: utaq xtbb gggf zorb
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+weather:
+  api:
+    apiKey: 80748648b31e475ba43112900240208
+    baseUrl: https://api.weatherapi.com/v1/forecast.json
