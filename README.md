@@ -254,4 +254,36 @@ Example response:
 You deleted event Example event.
 ```
 
+### 8.Reviews
+After taking a part in the event you can write the review.
+You can do this only if you were the participant of the event
+and event status must be COMPLETED.
+
+Request:
+```http request
+http://localhost:8080/reviews/
+```
+Example request:
+```json
+{
+  "eventName": "Science Fair 2024",
+  "degree": 5,
+  "content": "It was a really nice event!"
+}
+```
+Degree is acceptable from 1 do 5.
+
+Content is limited to 500 characters.
+
+Example response:
+```json
+{
+  "eventName": "Science Fair 2024",
+  "degree": 5,
+  "content": "It was a really nice event!",
+  "reviewer": "ChaLor3810"
+}
+```
+
+## EVERYDAY AT MIDNIGHT APPLICATION UPDATES EVENT STATUES AUTOMATICALLY
 
