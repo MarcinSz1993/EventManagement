@@ -1,4 +1,3 @@
-## As the project is still under development, please switch to the 'dev' branch to view the code.
 
 This application is designed for the organization and management of events. It allows users to create, update, and manage events while enabling participants to join these events.
 The system ensures secure user authentication and authorization through JWT and provides a clean separation of user data via DTOs for improved privacy.
@@ -84,7 +83,7 @@ Example response:
 }
 ```
 
-### *3.Creating event:
+### 3.Creating event:
 To create an event you need to fill all required fields and of course you must be logged in. The event name must be unique. As a response you get info about created event, organiser and list of participants.
 Example request:
 ```json
@@ -255,4 +254,36 @@ Example response:
 You deleted event Example event.
 ```
 
+### 8.Reviews
+After taking a part in the event you can write the review.
+You can do this only if you were the participant of the event
+and event status must be COMPLETED.
+
+Request:
+```http request
+http://localhost:8080/reviews/
+```
+Example request:
+```json
+{
+  "eventName": "Science Fair 2024",
+  "degree": 5,
+  "content": "It was a really nice event!"
+}
+```
+Degree is acceptable from 1 do 5.
+
+Content is limited to 500 characters.
+
+Example response:
+```json
+{
+  "eventName": "Science Fair 2024",
+  "degree": 5,
+  "content": "It was a really nice event!",
+  "reviewer": "ChaLor3810"
+}
+```
+
+## EVERYDAY AT MIDNIGHT APPLICATION UPDATES EVENT STATUES AUTOMATICALLY
 
