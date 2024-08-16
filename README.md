@@ -1,3 +1,5 @@
+#### As the project is still under development, please switch to 'dev' branch to view the most up-to-date code.
+
 
 This application is designed for the organization and management of events. It allows users to create, update, and manage events while enabling participants to join these events.
 The system ensures secure user authentication and authorization through JWT and provides a clean separation of user data via DTOs for improved privacy.
