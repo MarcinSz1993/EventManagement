@@ -32,7 +32,10 @@ docker-compose -f docker-compose-kafka.yml up -d
 
 ### 1.Creating a user:
 To create a user you need to type all required fields. Otherwise, an exception will be thrown. As a response you get UserDto.
-
+```http request
+[POST]
+http://localhost:8080/users/
+```
 Example request:
 ```json
 {
@@ -68,6 +71,10 @@ Example response:
 
 
 ### 2.Loggin:
+```http request
+[POST]
+http://localhost:8080/users/login
+```
 If you want to log in you must type correct credentials like email and password. As a response you get a token. The token automatically goes to cookie file.
 Example request:
 ```json
@@ -83,9 +90,13 @@ Example response:
 }
 ```
 
-### 3.Creating event:
+### 3.1 Creating event:
 To create an event you need to fill all required fields and of course you must be logged in. The event name must be unique. As a response you get info about created event, organiser and list of participants.
 Example request:
+```http request
+[POST]
+http://localhost:8080/events/
+```
 ```json
 {
   "eventName": "Example event",
@@ -118,6 +129,7 @@ Example request:
   "participants": []
 }
 ```
+### 3.2 Creating event
 There is also a second way to create events. You can upload a CSV file from your machine and the app will do rest job for you.
 The file must be in CSV format and must contain exactly 7 headers seperated by comma.
 
@@ -132,13 +144,41 @@ Charity Gala 2024,Fancy gala dinner to support local charities,Los Angeles,300,2
 In this way you can add many events in one time.
 Uploading the file is under the endpoint:
 ```http request
+[POST]
 http://localhost:8080/csv/uploadEvents
 ```
 The response is number of added events:
 ```html
 Added 3 events
 ```
+### 3.3 Creating event
+You also create event or events by uploading file in JSON format.
+```http request
+[POST]
+http://localhost:8080/json/
+```
+The json file must have structure as below:
+```json
+[
+  {
+    "eventName": "Future Innovators Meetup2",
+    "eventDescription": "A networking event for aspiring entrepreneurs and tech enthusiasts.",
+    "location": "San Francisco",
+    "maxAttendees": 400,
+    "eventDate": "2024-11-01",
+    "ticketPrice": 120.00,
+    "eventTarget": "CHILDREN"
+  }
+]
+```
+The structure of the JSON file is validated by both the JSON Schema and the Spring validation system.
+If the JSON file is valid, the response will show the number of events that were successfully added.
 
+Response:
+```html
+Added 1 events
+```
+---------------------------
 When you create an event it's automatically sending to Kafka server. In logs, you will see something like this:
 ```html
 Sent message: EventDto(id=40, eventName=Example event, eventDescription=Here you can write all details about the event., eventLocation=Poznań, maxAttendees=10, eventDate=2024-08-30, eventStatus=ACTIVE, ticketPrice=20.0, eventTarget=FAMILY, createdDate=2024-07-25T20:44:26.298079200, organiser=OrganiserDto(firstName=Marcin, lastName=Kowalski, userName=Marcin2024, email=marcin@kowalski.pl, phoneNumber=563215675), participants=[])with offset: 3
@@ -173,6 +213,7 @@ If you want to update your event you should type an id of the event, and then yo
 WARNING: You must be an owner the event to update the event.<br>
 Example request(Suppose we want to change max attendees):
 ```http request
+[PUT]
 http://localhost:8080/events/?eventId=40
 ```
 ```json
@@ -208,6 +249,7 @@ Example response:
 To join the event you have to type eventName as a parameter and the email as a request body.<br>
 Example request:
 ```http request
+[PUT]
 http://localhost:8080/events/join?eventName=Example%20event.
 ```
 ```json
@@ -224,6 +266,7 @@ You joined to the event EXAMPLE EVENT.
 You can check a weather on an eventday when you type eventId. A response shows some weather info from API which is represented by WeatherDto class.<br>
 Example request:
 ```http request
+[GET]
 http://localhost:8080/weather/?eventId=36
 ```
 Example response:
@@ -247,6 +290,7 @@ To delete the event you just need to give an id of the event you want to delete.
 WARNING: You must be an owner the event to delete the event.<br>
 Example request:
 ```http request
+[DELETE]
 http://localhost:8080/events/?eventId=36
 ```
 Example response:
@@ -261,6 +305,7 @@ and event status must be COMPLETED.
 
 Request:
 ```http request
+[POST]
 http://localhost:8080/reviews/
 ```
 Example request:
@@ -287,3 +332,64 @@ Example response:
 
 ## EVERYDAY AT MIDNIGHT APPLICATION UPDATES EVENT STATUES AUTOMATICALLY
 
+### 9. Download a personal file
+If a user wants to get all available information about their events,
+they can download a file in JSON format. The file contains details
+about the events they have joined, including basic information
+about other participants.
+
+```http request
+[GET]
+http://localhost:8080/json/
+```
+
+Example downloaded personal file:
+```json
+[
+  {
+    "id": 1,
+    "eventName": "Science Fair 2024",
+    "eventDescription": "Annual fair featuring science projects from local students",
+    "eventLocation": "Houston",
+    "maxAttendees": 400,
+    "eventDate": "2024-08-15",
+    "eventStatus": "ACTIVE",
+    "ticketPrice": 15.0,
+    "eventTarget": "CHILDREN",
+    "createdDate": "2024-08-08T22:02:25.131709",
+    "organiser": {
+      "firstName": "Mireielle",
+      "lastName": "Darbie",
+      "userName": "MirDar4410",
+      "email": "Mireielle.Darbie@yopmail.com",
+      "phoneNumber": "605696203"
+    },
+    "participants": [
+      {
+        "userId": 53,
+        "firstName": "Charmaine",
+        "lastName": "Loring",
+        "email": "Charmaine.Loring@yopmail.com",
+        "username": "ChaLor3810",
+        "birthDate": "1971-12-05",
+        "role": "USER",
+        "phoneNumber": "336028537",
+        "accountNumber": "4166756406",
+        "accountStatus": "ACTIVE"
+      },
+      {
+        "userId": 60,
+        "firstName": "Silvana",
+        "lastName": "Leffen",
+        "email": "Silvana.Leffen@yopmail.com",
+        "username": "SilLef8910",
+        "birthDate": "1975-01-15",
+        "role": "USER",
+        "phoneNumber": "952271367",
+        "accountNumber": "1190932600",
+        "accountStatus": "ACTIVE"
+      }
+    ]
+  }
+]
+```
