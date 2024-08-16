@@ -84,6 +84,12 @@ public class ControllerAdvisor {
     public String eventNotFinishedExceptionHandler(Exception ex){
         return ex.getMessage();
     }
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    @ExceptionHandler(InvalidJsonFileException.class)
+    public String invalidJsonFileExceptionHandler(Exception ex){
+        return ex.getMessage();
+    }
 }
 
 

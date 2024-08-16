@@ -13,6 +13,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -33,6 +34,7 @@ public class CsvService {
     private final EventCsvHandler eventCsvHandler;
     private final KafkaMessageProducer kafkaMessageProducer;
 
+    @Transactional
     public Integer uploadUsers(MultipartFile file) throws IOException, CsvValidationException {
         try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             Set<UserCsvRepresentation> userCsvRepresentations = userCsvHandler.parse(reader, file);
@@ -47,7 +49,7 @@ public class CsvService {
             return users.size();
         }
     }
-
+    @Transactional
     public String uploadEvents(MultipartFile file, String token) throws IOException, CsvValidationException {
         String username = jwtService.extractUsername(token);
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
