@@ -1,0 +1,37 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:marcinsz:eventmanagementsystem:request:CreateEventRequest",
+  "properties" : {
+    "eventName" : {
+      "type" : "string"
+    },
+    "eventDescription" : {
+      "type" : "string"
+    },
+    "location" : {
+      "type" : "string"
+    },
+    "maxAttendees" : {
+      "type" : "integer"
+    },
+    "eventDate" : {
+      "type" : "string",
+      "format" : "date"
+    },
+    "ticketPrice" : {
+      "type" : "number"
+    },
+    "eventTarget" : {
+      "type" : "string",
+      "enum" : [ "FAMILY", "SINGLES", "CHILDREN", "EVERYBODY", "ADULTS_ONLY" ]
+    }
+  },
+  "required": [
+    "eventName",
+    "eventDescription",
+    "location",
+    "maxAttendees",
+    "eventDate",
+    "eventTarget"
+  ]
+}
