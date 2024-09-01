@@ -57,6 +57,10 @@ public class Event {
     @JsonManagedReference
     private List<Review> reviews;
 
+    @OneToMany(mappedBy = "event")
+    @JsonManagedReference
+    private List<Ticket> tickets;
+
     public Event(String eventName,
                  String eventDescription,
                  String location,

@@ -55,6 +55,10 @@ public class User implements UserDetails {
     @JsonManagedReference
     private List<Review> reviews;
 
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<Ticket> tickets;
+
     public User(String firstName, String lastName, String email,String username,
                 String password, LocalDate birthDate, Role role,
                 String phoneNumber, String accountNumber,
