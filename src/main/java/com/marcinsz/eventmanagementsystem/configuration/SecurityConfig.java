@@ -39,6 +39,7 @@ public class SecurityConfig {
                     registry.requestMatchers("/swagger-ui/**").permitAll();
                     registry.requestMatchers("/v3/api-docs/**").permitAll();
                     registry.requestMatchers("/events").hasAnyRole("USER","ADMIN");
+                    registry.requestMatchers("/payments/").permitAll();
                     registry.requestMatchers("reviews/delete/").hasRole("ADMIN");
                     registry.anyRequest().authenticated();
                 })

@@ -3,11 +3,13 @@ package com.marcinsz.eventmanagementsystem.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
 @Table(name = "ticket")
 @NoArgsConstructor
 @AllArgsConstructor

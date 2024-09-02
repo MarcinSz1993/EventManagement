@@ -149,7 +149,7 @@ public class EventService {
         return eventName;
     }
 
-    @Scheduled(cron = "0 0 0 * * ? ")
+    @Scheduled(cron = "0 35 10 * * ? ")
     public void updateEventsStatuses(){
         List<Event> activeEventsList = eventRepository.findAllByActiveEventStatus(EventStatus.ACTIVE);
         activeEventsList.forEach(event -> {

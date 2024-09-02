@@ -90,6 +90,13 @@ public class ControllerAdvisor {
     public String invalidJsonFileExceptionHandler(Exception ex){
         return ex.getMessage();
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(TicketAlreadyBought.class)
+    public String ticketAlreadyBoughtHandler(Exception ex){
+        return ex.getMessage();
+    }
 }
 
 
