@@ -93,8 +93,28 @@ public class ControllerAdvisor {
 
     @ResponseBody
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(TicketAlreadyBought.class)
+    @ExceptionHandler(TicketAlreadyBoughtException.class)
     public String ticketAlreadyBoughtHandler(Exception ex){
+        return ex.getMessage();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(BankServiceServerNotAvailableException.class)
+    public String bankServiceServerNotAvailableHandler(Exception ex){
+        return ex.getMessage();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(TransactionProcessServerException.class)
+    public String transactionProcessServerHandler(Exception ex){
+        return ex.getMessage();
+    }
+    @ResponseBody
+    @ResponseStatus(HttpStatus.PROCESSING)
+    @ExceptionHandler(TransactionProcessClientException.class)
+    public String transactionProcessClientHandler(Exception ex){
         return ex.getMessage();
     }
 }
