@@ -2,6 +2,7 @@ package com.marcinsz.eventmanagementsystem.repository;
 
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
+import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import com.marcinsz.eventmanagementsystem.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,6 @@ public interface EventRepository extends JpaRepository<Event,Long> {
 
     @Query("SELECT e from Event e where e.eventStatus = :status")
     List<Event> findAllByActiveEventStatus(@Param("status") EventStatus status);
+
+    List<Event> findAllByEventTarget(EventTarget eventTarget);
 }

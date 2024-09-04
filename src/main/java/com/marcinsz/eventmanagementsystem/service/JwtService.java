@@ -49,18 +49,19 @@ public class JwtService {
     }
 
     public String generateToken(User user){
-        String token = Jwts
+        return Jwts
                 .builder()
                 .subject(user.getUsername())
+                .claim("role",user.getRole().name())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+ 24*60*60*1000))
                 .signWith(getSigningKey())
                 .compact();
-        return token;
     }
 
     private SecretKey getSigningKey(){
         byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
 }

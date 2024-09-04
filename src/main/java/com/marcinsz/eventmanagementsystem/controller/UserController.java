@@ -1,5 +1,6 @@
 package com.marcinsz.eventmanagementsystem.controller;
 
+import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.model.AuthenticationResponse;
 import com.marcinsz.eventmanagementsystem.model.CreateUserResponse;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
@@ -10,10 +11,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Validated
 @RestController
@@ -37,6 +37,13 @@ public class UserController {
         String token = login.getToken();
         addTokenToCookie(token,servletResponse);
         return login;
+    }
+
+    @GetMapping("/preferences")
+    public List<EventDto> getEventsListBasedOnUserPreferences(@RequestHeader("Authorization") String authorizationHeader){
+        String token = authorizationHeader.substring("Bearer ".length());
+        System.out.println(token);
+        return userService.getEventsBasedOnUserPreferences(token);
     }
 
     private void addTokenToCookie(String token, HttpServletResponse servletResponse){

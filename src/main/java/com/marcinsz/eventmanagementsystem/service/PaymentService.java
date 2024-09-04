@@ -21,6 +21,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -50,11 +52,13 @@ public class PaymentService {
         webClient.put()
                 .uri("http://localhost:9090/transactions/")
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.CACHE_CONTROL,"no-cache")
                 .bodyValue(transactionRequest)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, _ -> Mono.error(new TransactionProcessClientException("Client error while processing transaction.")))
                 .onStatus(HttpStatusCode::is5xxServerError, _ -> Mono.error(new TransactionProcessServerException("Server error while processing transaction.")))
                 .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(5))
                 .doOnError(WebClientRequestException.class, _ -> {
                     throw new BankServiceServerNotAvailableException();
                 })
