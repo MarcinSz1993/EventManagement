@@ -141,11 +141,11 @@ public class EventService {
         String eventName = eventToDelete.getEventName();
         EventDto eventDto = EventMapper.convertEventToEventDto(eventToDelete);
         eventDto.setEventStatus(EventStatus.CANCELLED);
-        kafkaMessageProducer.sendCancelledMessageToEventCancelledTopic(eventDto);
         if(!usernameLoggedUser.equals(organiserUsername)){
             throw new IllegalArgumentException("You can delete your events only!");
         }
         eventRepository.deleteById(eventId);
+        kafkaMessageProducer.sendCancelledMessageToEventCancelledTopic(eventDto);
         return eventName;
     }
 
