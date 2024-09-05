@@ -10,6 +10,7 @@ import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -134,6 +135,7 @@ class UserServiceTest {
                 .events(Collections.emptyList())
                 .organizedEvents(Collections.emptyList())
                 .build();
+        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
         AuthenticationRequest authenticationRequest = new AuthenticationRequest
                 ("johnny","encodedPassword");
         AuthenticationResponse expectedResponse = new AuthenticationResponse
@@ -145,7 +147,7 @@ class UserServiceTest {
         when(userRepository.findByUsername(authenticationRequest.getUsername())).thenReturn(Optional.ofNullable(user));
         when(jwtService.generateToken(user)).thenReturn("mockedToken");
 
-        AuthenticationResponse response = userService.login(authenticationRequest);
+        AuthenticationResponse response = userService.login(authenticationRequest,httpServletRequest);
 
         assertEquals(expectedResponse.getToken(),response.getToken());
     }
@@ -153,11 +155,12 @@ class UserServiceTest {
     @Test
     public void loginShouldThrowBadCredentialExceptionWhenAtLeastOneOfCredentialsIsNotCorrect(){
 
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         AuthenticationRequest authenticationRequest = new AuthenticationRequest("correctLogin","incorrectPassword");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException());
 
-        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.login(authenticationRequest));
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.login(authenticationRequest,request));
         assertEquals("You typed incorrect login or password.",exception.getMessage());
     }
 

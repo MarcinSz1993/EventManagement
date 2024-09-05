@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Optional<Ticket> findByUser_IdAndEvent_Id(Long userId,Long eventId);
+
+    Optional<Ticket> findByUser_IdAndEvent_EventName(Long userId,String eventName);
 }

@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -134,6 +135,7 @@ public class EventService {
 
     @CacheEvict(cacheNames = "events",allEntries = true)
     @Transactional
+    @PreAuthorize("hasRole('USER')")
     public String deleteEvent(Long eventId, String token) {
         Event eventToDelete = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
         String organiserUsername = eventToDelete.getOrganizer().getUsername();

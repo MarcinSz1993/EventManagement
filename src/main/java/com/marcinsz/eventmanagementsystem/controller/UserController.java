@@ -7,6 +7,7 @@ import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import com.marcinsz.eventmanagementsystem.service.UserService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,10 @@ public class UserController {
 
     @PostMapping("/login")
     public AuthenticationResponse login(@RequestBody @Valid AuthenticationRequest authenticationRequest,
+                                        HttpServletRequest httpServletRequest,
                                         HttpServletResponse servletResponse) {
-        AuthenticationResponse login = userService.login(authenticationRequest);
+        AuthenticationResponse login = userService.login(authenticationRequest,
+                                                         httpServletRequest);
         String token = login.getToken();
         addTokenToCookie(token,servletResponse);
         return login;

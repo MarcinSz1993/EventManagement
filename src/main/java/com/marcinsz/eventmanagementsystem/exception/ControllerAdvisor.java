@@ -117,6 +117,12 @@ public class ControllerAdvisor {
     public String transactionProcessClientHandler(Exception ex){
         return ex.getMessage();
     }
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(EmptyCartException.class)
+    public String emptyCartHandler(Exception ex){
+        return ex.getMessage();
+    }
 }
 
 

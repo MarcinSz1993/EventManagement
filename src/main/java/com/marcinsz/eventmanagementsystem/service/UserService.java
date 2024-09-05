@@ -11,6 +11,7 @@ import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,7 +48,8 @@ public class UserService {
         return new CreateUserResponse(userDto, token);
     }
 
-    public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
+    public AuthenticationResponse login(AuthenticationRequest authenticationRequest,
+                                        HttpServletRequest httpServletRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -59,6 +62,7 @@ public class UserService {
         }
         User user = userRepository.findByUsername(authenticationRequest.getUsername()).orElseThrow(() -> new UserNotFoundException(authenticationRequest.getUsername()));
         String token = jwtService.generateToken(user);
+        httpServletRequest.getSession().setAttribute("cart",new Cart(new HashMap<>()));
         return new AuthenticationResponse(token);
     }
 

@@ -64,10 +64,6 @@ weather:
     apiKey: 80748648b31e475ba43112900240208
     baseUrl: https://api.weatherapi.com/v1/forecast.json
 
-server:
-  servlet:
-    session:
-      timeout: 15m
 logging:
   level:
     org.springframework.security: DEBUG
