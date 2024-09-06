@@ -395,3 +395,73 @@ Example downloaded personal file:
   }
 ]
 ```
+
+### 10. Tickets
+The application has an option of buying a single ticket for an event.
+This feature is a simple simulation. This app is integrated with my simple project BankService (you can view it on my GitHub).
+If a user has account in BankService and the same accountNumber in EventManagementSystem then he can buy
+a ticket for any event after logging in and typing a correct password:
+```http request
+[PUT]
+http://localhost:8080/payments/
+```
+```json
+{
+  "eventId": 3,
+  "numberAccount": "2022716440",
+  "password": "qwerty"
+}
+```
+If everything goes well, the response is code 200 and message:
+```html
+Congratulations! You have successfully buy a ticket!
+```
+A method handles some exception cases. One of them is the case when BankService is off.
+Then the response is:
+```html
+Bank Service server is not available
+```
+### 11. Cart
+There is implemented a cart feature in the app. The cart feature is based on session.
+A user can add to the cart tickets he wants to buy and in this way he can buy a few tickets at the same time.
+Total price is generated automatically. Items in the cart are stored in 15minutes session.
+```http request
+[POST]
+http://localhost:8080/carts?eventId=309
+```
+Response:
+```html
+Ticket has been added to the cart.
+```
+
+To view your tickets/events in the cart and check a total price go to the endpoint:
+```http request
+[GET]
+http://localhost:8080/carts
+```
+And you will see current cart:
+```json
+{
+  "events": {
+    "Esports Championship Finals": 75,
+    "Sustainable Living Workshop": 40
+  },
+  "totalPrice": 115
+}
+```
+To buy all tickets in the card hit the endpoint:
+```http request
+[PUT]
+http://localhost:8080/payments/cart
+```
+Type correct individual data:
+```json
+{
+  "numberAccount": "2022716440",
+  "password": "qwerty"
+}
+```
+Correct response is code 200 and message:
+```html
+Tickets have been purchased.
+```
