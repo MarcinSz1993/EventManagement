@@ -62,7 +62,7 @@ public class PaymentService {
                                    HttpServletRequest httpServletRequest){
         Cart cart = (Cart) httpServletRequest.getSession().getAttribute("cart");
         if (cart.getEvents().isEmpty()){
-            throw new EmptyCartException("Your cart is empty");
+            throw new EmptyCartException("Your cart is empty.");
         }
         String username = jwtService.extractUsername(token);
         User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
@@ -106,6 +106,7 @@ public class PaymentService {
                 .uri("http://localhost:9090/transactions/")
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .header(HttpHeaders.CACHE_CONTROL,"no-cache")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .bodyValue(transactionRequest)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, _ -> Mono.error(new TransactionProcessClientException("Client error while processing transaction.")))

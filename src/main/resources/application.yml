@@ -68,3 +68,12 @@ logging:
   level:
     org.springframework.security: DEBUG
     root: info
+
+server:
+  servlet:
+    session:
+      timeout: 15m
+      cookie:
+        http-only: true
+        max-age: 15m
+        same-site: strict
