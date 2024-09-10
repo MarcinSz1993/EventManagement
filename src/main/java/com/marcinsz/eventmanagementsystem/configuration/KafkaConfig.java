@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+
 @Getter
 @Setter
 @Configuration
@@ -11,5 +12,6 @@ import org.springframework.context.annotation.Configuration;
 public class KafkaConfig {
     private String allEventsTopic;
     private String CancelledEventsTopic;
+    private String paymentTopic;
     private String groupId;
 }

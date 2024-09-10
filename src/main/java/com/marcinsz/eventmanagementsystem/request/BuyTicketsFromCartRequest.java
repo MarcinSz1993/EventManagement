@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BuyTicketsFromCartRequest {
     private String numberAccount;
-    private String password;
+    private String bankPassword;
 }

@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -15,6 +17,9 @@ public class CartService {
     private final EventRepository eventRepository;
 
     public void addToCart(Long eventId, HttpServletRequest httpServletRequest) {
+        if(httpServletRequest.getSession().getAttribute("cart") == null) {
+            httpServletRequest.getSession().setAttribute("cart", new Cart(new HashMap<>()));
+        }
         Cart cart = getCart(httpServletRequest);
         Event event = getEvent(eventId);
         cart.addTicket(event);

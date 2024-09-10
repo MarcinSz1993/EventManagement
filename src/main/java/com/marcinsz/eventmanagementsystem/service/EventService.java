@@ -147,11 +147,11 @@ public class EventService {
             throw new IllegalArgumentException("You can delete your events only!");
         }
         eventRepository.deleteById(eventId);
-        kafkaMessageProducer.sendCancelledMessageToEventCancelledTopic(eventDto);
+        kafkaMessageProducer.sendCancelledEventMessageToCancellationTopic(eventDto);
         return eventName;
     }
 
-    @Scheduled(cron = "0 35 10 * * ? ")
+    @Scheduled(cron = "0 32 13 * * ? ")
     public void updateEventsStatuses(){
         List<Event> activeEventsList = eventRepository.findAllByActiveEventStatus(EventStatus.ACTIVE);
         activeEventsList.forEach(event -> {

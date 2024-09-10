@@ -29,6 +29,7 @@ spring:
       allEventsTopic: "allEvents"
       cancelledEventsTopic: "cancelledEvents"
       groupId: "EventManagement-group"
+      payment-topic: "expectingPayments"
 
     producer:
       bootstrap-servers: localhost:9092

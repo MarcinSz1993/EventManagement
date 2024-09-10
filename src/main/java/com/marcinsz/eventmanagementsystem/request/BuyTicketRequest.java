@@ -16,5 +16,5 @@ public class BuyTicketRequest {
     @NotBlank(message = "A number account is necessary.")
     private String numberAccount;
     @NotBlank(message = "A password is required")
-    private String password;
+    private String bankPassword;
 }
