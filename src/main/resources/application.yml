@@ -25,28 +25,42 @@ spring:
 
 
   kafka:
+    bootstrap-servers: localhost:9092
     config:
       allEventsTopic: "allEvents"
       cancelledEventsTopic: "cancelledEvents"
-      groupId: "EventManagement-group"
-      payment-topic: "expectingPayments"
+      bankServiceGroupId: "bank-service"
+      paymentTopic: "expectingPayments"
+      completedPaymentsTopic: "completedTransactions"
+      eventManagementGroupId: "EventManagement-group"
 
     producer:
-      bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.trusted.packages: '*'
-
+        spring.json.trusted.packages: '*'  # Umożliwia deserializację wszystkich pakietów
 
     consumer:
-      bootstrap-servers: localhost:9092
-      group-id: events-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: '*'
-    bootstrap-servers: localhost:9092
+        spring.json.trusted.packages: '*'  # Wskazuje, że wszystkie pakiety są zaufane dla deserializacji
+
+      allEventsConsumer:
+        group-id: "${spring.kafka.config.groupId}"
+        properties:
+          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto  # Ustawia domyślny typ EventDto
+          spring.json.trusted.packages: '*'  # Pozwala na deserializację typu EventDto
+
+      cancelledEventsConsumer:
+        group-id: "${spring.kafka.config.groupId}"
+        properties:
+          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto  # Ustawienie domyślnego typu dla EventDto
+          spring.json.trusted.packages: '*'  # Umożliwia zaufanie do pakietu EventDto
+
+      completedPaymentsConsumer:
+        group-id: "${spring.kafka.config.bankServiceGroupId}"
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # Zwykła deserializacja String
 
   mail:
     host: smtp.gmail.com

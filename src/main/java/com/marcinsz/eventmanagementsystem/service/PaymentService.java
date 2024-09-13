@@ -55,6 +55,8 @@ public class PaymentService {
         validateTicket(userTicket);
         TransactionRequest transactionRequest = RequestMapper.convertBuyTicketRequestToTransactionRequest(buyTicketRequest);
         transactionRequest.setAmount(event.getTicketPrice());
+        transactionRequest.setUserId(user.getId());
+        transactionRequest.setEventId(event.getId());
         String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest,transactionRequest);
         prepareDataForTransaction(userTicket, transactionRequest, bankServiceToken);
     }

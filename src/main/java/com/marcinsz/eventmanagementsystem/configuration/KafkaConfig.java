@@ -11,7 +11,9 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "spring.kafka.config")
 public class KafkaConfig {
     private String allEventsTopic;
-    private String CancelledEventsTopic;
+    private String cancelledEventsTopic;
     private String paymentTopic;
-    private String groupId;
+    private String completedPaymentsTopic;
+    private String eventManagementGroupId;
+    private String bankServiceGroupId;
 }

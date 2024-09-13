@@ -14,4 +14,6 @@ public class TransactionRequest {
     private String accountNumber;
     private double amount;
     private TransactionType transactionType;
+    private Long eventId;
+    private Long userId;
 }
