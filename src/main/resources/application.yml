@@ -38,29 +38,29 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.trusted.packages: '*'  # Umożliwia deserializację wszystkich pakietów
+        spring.json.trusted.packages: '*'
 
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: '*'  # Wskazuje, że wszystkie pakiety są zaufane dla deserializacji
+        spring.json.trusted.packages: '*'
 
       allEventsConsumer:
         group-id: "${spring.kafka.config.groupId}"
         properties:
-          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto  # Ustawia domyślny typ EventDto
-          spring.json.trusted.packages: '*'  # Pozwala na deserializację typu EventDto
+          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto
+          spring.json.trusted.packages: '*'
 
       cancelledEventsConsumer:
         group-id: "${spring.kafka.config.groupId}"
         properties:
-          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto  # Ustawienie domyślnego typu dla EventDto
-          spring.json.trusted.packages: '*'  # Umożliwia zaufanie do pakietu EventDto
+          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto
+          spring.json.trusted.packages: '*'
 
       completedPaymentsConsumer:
         group-id: "${spring.kafka.config.bankServiceGroupId}"
-        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # Zwykła deserializacja String
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
   mail:
     host: smtp.gmail.com
