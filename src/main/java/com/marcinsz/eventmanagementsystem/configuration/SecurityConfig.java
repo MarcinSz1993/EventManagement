@@ -34,7 +34,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/events/test").hasRole("USER");
+                    registry.requestMatchers("/users").permitAll();
                     registry.requestMatchers("/csv/uploadUsers").permitAll();
                     registry.requestMatchers("/users/preferences").hasRole("USER");
                     registry.requestMatchers("/users/login").permitAll();

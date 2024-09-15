@@ -1,0 +1,92 @@
+[
+  {
+    "eventName": "Future Innovators Meetup",
+    "eventDescription": "A networking event for aspiring entrepreneurs and tech enthusiasts.",
+    "location": "San Francisco",
+    "maxAttendees": 400,
+    "eventDate": "2024-11-01",
+    "ticketPrice": 120.00,
+    "eventTarget": "FAMILY"
+  },
+  {
+    "eventName": "Green Energy Expo",
+    "eventDescription": "A conference dedicated to advancements in renewable energy and sustainability.",
+    "location": "Austin",
+    "maxAttendees": 600,
+    "eventDate": "2024-09-18",
+    "ticketPrice": 90.00,
+    "eventTarget": "EVERYBODY"
+  },
+  {
+    "eventName": "Gourmet Food Festival",
+    "eventDescription": "A celebration of culinary excellence with food from top chefs around the world.",
+    "location": "New York",
+    "maxAttendees": 2500,
+    "eventDate": "2024-10-22",
+    "ticketPrice": 150.00,
+    "eventTarget": "SINGLES"
+  },
+  {
+    "eventName": "Creative Minds Art Fair",
+    "eventDescription": "A showcase of innovative art from emerging artists across the globe.",
+    "location": "Los Angeles",
+    "maxAttendees": 1200,
+    "eventDate": "2024-10-05",
+    "ticketPrice": 60.00,
+    "eventTarget": "SINGLES"
+  },
+  {
+    "eventName": "Fitness and Wellness Retreat",
+    "eventDescription": "A holistic wellness retreat focused on fitness, mindfulness, and health.",
+    "location": "Sedona",
+    "maxAttendees": 300,
+    "eventDate": "2024-11-15",
+    "ticketPrice": 250.00,
+    "eventTarget": "ADULTS_ONLY"
+  },
+  {
+    "eventName": "Startups & Scaleups Conference",
+    "eventDescription": "A summit for startup founders and scaleup leaders to exchange insights and grow.",
+    "location": "Chicago",
+    "maxAttendees": 500,
+    "eventDate": "2024-12-02",
+    "ticketPrice": 180.00,
+    "eventTarget": "EVERYBODY"
+  },
+  {
+    "eventName": "Adventure Travel Expo",
+    "eventDescription": "A travel expo dedicated to adventure tourism and extreme sports destinations.",
+    "location": "Denver",
+    "maxAttendees": 700,
+    "eventDate": "2024-09-25",
+    "ticketPrice": 100.00,
+    "eventTarget": "FAMILY"
+  },
+  {
+    "eventName": "Esports Championship Finals",
+    "eventDescription": "The grand finals of an international esports tournament with top teams competing.",
+    "location": "Seattle",
+    "maxAttendees": 8000,
+    "eventDate": "2024-11-20",
+    "ticketPrice": 75.00,
+    "eventTarget": "CHILDREN"
+  },
+  {
+    "eventName": "Sustainable Living Workshop",
+    "eventDescription": "A workshop on sustainable living practices and eco-friendly lifestyle choices.",
+    "location": "Portland",
+    "maxAttendees": 200,
+    "eventDate": "2024-12-30",
+    "ticketPrice": 40.00,
+    "eventTarget": "FAMILY"
+  },
+  {
+    "eventName": "Indie Film Showcase",
+    "eventDescription": "A festival dedicated to screening and celebrating independent films and documentaries.",
+    "location": "Toronto",
+    "maxAttendees": 1000,
+    "eventDate": "2024-10-10",
+    "ticketPrice": 80.00,
+    "eventTarget": "SINGLES"
+  }
+]

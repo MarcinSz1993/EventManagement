@@ -19,7 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 public class Event {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "event_seq")
+    @SequenceGenerator(name = "event_seq",sequenceName = "event_id_seq",allocationSize = 1)
     private Long id;
     @Column(unique = true)
     private String eventName;

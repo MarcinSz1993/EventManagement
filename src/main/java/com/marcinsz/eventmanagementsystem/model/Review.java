@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Review {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "review_seq")
+    @SequenceGenerator(name = "review_seq",sequenceName = "review_id_seq",allocationSize = 1)
     private Long id;
     private int degree;
     private String content;

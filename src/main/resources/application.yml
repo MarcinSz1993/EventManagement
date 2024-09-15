@@ -19,6 +19,7 @@ spring:
         format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
 
   jackson:
     property-naming-strategy: LOWER_CAMEL_CASE

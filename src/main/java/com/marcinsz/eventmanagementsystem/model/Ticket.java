@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Ticket {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "ticket_seq")
+    @SequenceGenerator(name = "ticket_seq",sequenceName = "ticket_id_seq", allocationSize = 1)
     private Long id;
     private boolean hasTicket;
 

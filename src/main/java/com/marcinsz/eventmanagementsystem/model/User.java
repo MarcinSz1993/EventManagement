@@ -23,8 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "users_id")
+    @SequenceGenerator(name = "users_id",sequenceName = "users_id_seq",allocationSize = 1)
     private Long id;
     private String firstName;
     private String lastName;

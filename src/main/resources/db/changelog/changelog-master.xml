@@ -10,4 +10,12 @@
     <include file="/db/changelog/changelog01.sql"/>
     <include file="/db/changelog/changelog02.sql"/>
     <include file="/db/changelog/changelog03.sql"/>
+    <include file="/db/changelog/changelog04.sql"/>
+    <include file="/db/changelog/changelog05.sql"/>
+    <include file="/db/changelog/changelog06.sql"/>
+    <include file="/db/changelog/changelog07.sql"/>
+    <include file="/db/changelog/changelog08.sql"/>
+    <include file="/db/changelog/changelog09.sql"/>
+    <include file="/db/changelog/changelog10.sql"/>
+    <include file="/db/changelog/changelog11.sql"/>
 </databaseChangeLog>

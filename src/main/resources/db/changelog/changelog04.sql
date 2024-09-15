@@ -1,10 +1,10 @@
 --liquibase formatted sql
 
---changelog MarcinSz1993:4
+--changeset MarcinSz1993:7
 
 create table if not exists review
 (
-    id       bigint  not null
+    id       bigserial  not null
         primary key,
     content  varchar(255),
     degree   integer not null,
@@ -18,7 +18,7 @@ create table if not exists review
 
 create table if not exists ticket
 (
-    id         bigint  not null
+    id         bigserial  not null
         primary key,
     has_ticket boolean not null,
     event_id   bigint
