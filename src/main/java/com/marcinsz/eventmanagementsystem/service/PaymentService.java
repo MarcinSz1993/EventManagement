@@ -80,6 +80,8 @@ public class PaymentService {
         List<String> listOfEventNames = setOfEventNames.stream().toList();
 
         for (String eventName : listOfEventNames) {
+            Event event = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
+            String organizerAccountNumber = event.getOrganizer().getAccountNumber();
             Ticket userTicket = ticketRepository.findByUser_IdAndEvent_EventName(user.getId(), eventName)
                     .orElse(Ticket
                             .builder()
@@ -88,8 +90,11 @@ public class PaymentService {
                             .event(eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName)))
                             .build());
             validateTicket(userTicket);
-            TransactionKafkaRequest transactionKafkaRequest = TransactionMapper.convertbuyTicketsFromCartRequestToTransactionRequest(buyTicketsFromCartRequest);
+            TransactionKafkaRequest transactionKafkaRequest = TransactionMapper.convertBuyTicketsFromCartRequestToTransactionRequest(buyTicketsFromCartRequest);
             transactionKafkaRequest.setAmount(cart.getTotalPrice());
+            transactionKafkaRequest.setUserId(user.getId());
+            transactionKafkaRequest.setEventId(event.getId());
+            transactionKafkaRequest.setOrganizerBankAccountNumber(organizerAccountNumber);
             String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest, transactionKafkaRequest);
             prepareDataForTransaction(userTicket, transactionKafkaRequest, bankServiceToken);
             cart.getEvents().remove(eventName);

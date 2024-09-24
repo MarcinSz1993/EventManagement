@@ -14,7 +14,7 @@ public class TransactionMapper {
                 .build();
     }
 
-    public static TransactionKafkaRequest convertbuyTicketsFromCartRequestToTransactionRequest(BuyTicketsFromCartRequest buyTicketsFromCartRequest) {
+    public static TransactionKafkaRequest convertBuyTicketsFromCartRequestToTransactionRequest(BuyTicketsFromCartRequest buyTicketsFromCartRequest) {
         return TransactionKafkaRequest.builder()
                 .accountNumber(buyTicketsFromCartRequest.getNumberAccount())
                 .amount(0.0)
