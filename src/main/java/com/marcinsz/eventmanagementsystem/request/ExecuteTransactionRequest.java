@@ -1,19 +1,14 @@
 package com.marcinsz.eventmanagementsystem.request;
 
 import com.marcinsz.eventmanagementsystem.model.TransactionType;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class TransactionRequest {
-    private String accountNumber;
+public class ExecuteTransactionRequest {
+    private String senderAccountNumber;
     private double amount;
     private TransactionType transactionType;
-    private Long eventId;
-    private Long userId;
+    private String recipientAccountNumber;
 }

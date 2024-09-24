@@ -12,7 +12,7 @@ import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.TicketRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
-import com.marcinsz.eventmanagementsystem.request.TransactionRequest;
+import com.marcinsz.eventmanagementsystem.request.TransactionKafkaRequest;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,9 +58,9 @@ public class KafkaMessageListener {
     public void handleExpectingPayment(String message) throws JsonProcessingException {
         System.out.println(message);
         ObjectMapper objectMapper = new ObjectMapper();
-        TransactionRequest transactionRequest = objectMapper.readValue(message, TransactionRequest.class);
-        User user = userRepository.findById(transactionRequest.getUserId()).orElseThrow(() -> new UserNotFoundException("User not found"));
-        Event event = eventRepository.findById(transactionRequest.getEventId()).orElseThrow(() -> new EventNotFoundException("Event not found"));
+        TransactionKafkaRequest transactionKafkaRequest = objectMapper.readValue(message, TransactionKafkaRequest.class);
+        User user = userRepository.findById(transactionKafkaRequest.getUserId()).orElseThrow(() -> new UserNotFoundException("User not found"));
+        Event event = eventRepository.findById(transactionKafkaRequest.getEventId()).orElseThrow(() -> new EventNotFoundException("Event not found"));
         Ticket ticket = Ticket.builder()
                 .event(event)
                 .user(user)

@@ -1,7 +1,9 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.exception.*;
-import com.marcinsz.eventmanagementsystem.mapper.RequestMapper;
+import com.marcinsz.eventmanagementsystem.mapper.BankServiceMapper;
+import com.marcinsz.eventmanagementsystem.request.ExecuteTransactionRequest;
+import com.marcinsz.eventmanagementsystem.mapper.TransactionMapper;
 import com.marcinsz.eventmanagementsystem.model.Cart;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.Ticket;
@@ -12,7 +14,7 @@ import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.BankServiceLoginRequest;
 import com.marcinsz.eventmanagementsystem.request.BuyTicketRequest;
 import com.marcinsz.eventmanagementsystem.request.BuyTicketsFromCartRequest;
-import com.marcinsz.eventmanagementsystem.request.TransactionRequest;
+import com.marcinsz.eventmanagementsystem.request.TransactionKafkaRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,29 +45,31 @@ public class PaymentService {
     @Transactional
     public void buyTicket(BuyTicketRequest buyTicketRequest,
                           String token) {
-        BankServiceLoginRequest bankServiceLoginRequest = RequestMapper.convertBuyTicketRequestToBankServiceLoginRequest(buyTicketRequest);
+        BankServiceLoginRequest bankServiceLoginRequest = BankServiceMapper.convertBuyTicketRequestToBankServiceLoginRequest(buyTicketRequest);
         String username = jwtService.extractUsername(token);
         User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
         Event event = eventRepository.findById(buyTicketRequest.getEventId()).orElseThrow(() -> new EventNotFoundException(buyTicketRequest.getEventId()));
+        String organizerBankAccountNumber = event.getOrganizer().getAccountNumber();
         Ticket userTicket = ticketRepository.findByUser_IdAndEvent_Id(user.getId(), event.getId()).orElse(Ticket.builder()
                 .hasTicket(false)
                 .user(user)
                 .event(event)
                 .build());
         validateTicket(userTicket);
-        TransactionRequest transactionRequest = RequestMapper.convertBuyTicketRequestToTransactionRequest(buyTicketRequest);
-        transactionRequest.setAmount(event.getTicketPrice());
-        transactionRequest.setUserId(user.getId());
-        transactionRequest.setEventId(event.getId());
-        String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest,transactionRequest);
-        prepareDataForTransaction(userTicket, transactionRequest, bankServiceToken);
+        TransactionKafkaRequest transactionKafkaRequest = TransactionMapper.convertBuyTicketRequestToTransactionRequest(buyTicketRequest);
+        transactionKafkaRequest.setAmount(event.getTicketPrice());
+        transactionKafkaRequest.setUserId(user.getId());
+        transactionKafkaRequest.setEventId(event.getId());
+        transactionKafkaRequest.setOrganizerBankAccountNumber(organizerBankAccountNumber);
+        String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest, transactionKafkaRequest);
+        prepareDataForTransaction(userTicket, transactionKafkaRequest, bankServiceToken);
     }
 
     @Transactional
     public void buyTicketsFromCart(BuyTicketsFromCartRequest buyTicketsFromCartRequest,
                                    String token,
                                    HttpServletRequest httpServletRequest) {
-        BankServiceLoginRequest bankServiceLoginRequest = RequestMapper.convertBuyTicketsFromCartRequestToBankServiceLoginRequest(buyTicketsFromCartRequest);
+        BankServiceLoginRequest bankServiceLoginRequest = BankServiceMapper.convertBuyTicketsFromCartRequestToBankServiceLoginRequest(buyTicketsFromCartRequest);
         Cart cart = (Cart) httpServletRequest.getSession().getAttribute("cart");
         if (cart.getEvents().isEmpty()) {
             throw new EmptyCartException("Your cart is empty.");
@@ -84,10 +88,10 @@ public class PaymentService {
                             .event(eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName)))
                             .build());
             validateTicket(userTicket);
-            TransactionRequest transactionRequest = RequestMapper.convertbuyTicketsFromCartRequestToTransactionRequest(buyTicketsFromCartRequest);
-            transactionRequest.setAmount(cart.getTotalPrice());
-            String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest,transactionRequest);
-            prepareDataForTransaction(userTicket, transactionRequest, bankServiceToken);
+            TransactionKafkaRequest transactionKafkaRequest = TransactionMapper.convertbuyTicketsFromCartRequestToTransactionRequest(buyTicketsFromCartRequest);
+            transactionKafkaRequest.setAmount(cart.getTotalPrice());
+            String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest, transactionKafkaRequest);
+            prepareDataForTransaction(userTicket, transactionKafkaRequest, bankServiceToken);
             cart.getEvents().remove(eventName);
         }
     }
@@ -98,7 +102,8 @@ public class PaymentService {
         }
     }
 
-    private void prepareDataForTransaction(Ticket userTicket, TransactionRequest transactionRequest, String bankServiceToken) {
+    private void prepareDataForTransaction(Ticket userTicket, TransactionKafkaRequest transactionKafkaRequest, String bankServiceToken) {
+        ExecuteTransactionRequest executeTransactionRequest = TransactionMapper.convertTransactionRequestToExecuteTransactionRequest(transactionKafkaRequest);
         try {
             webClient.put()
                     .uri("http://localhost:9090/transactions/")
@@ -106,7 +111,7 @@ public class PaymentService {
                     .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.CACHE_CONTROL, "no-cache")
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .bodyValue(transactionRequest)
+                    .bodyValue(executeTransactionRequest)
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, response -> {
                         log.error("Client error while processing transaction: {}", response.statusCode());
@@ -120,7 +125,7 @@ public class PaymentService {
                     .timeout(Duration.ofSeconds(15))
                     .doOnError(WebClientRequestException.class, ex -> {
                         log.error("Error during WebClient request: {}", ex.getMessage());
-                        kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionRequest);
+                        kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
                         throw new BankServiceServerNotAvailableException();
                     })
                     .block();
@@ -133,14 +138,14 @@ public class PaymentService {
     }
 
     private String verifyUserInBankService(BankServiceLoginRequest bankServiceLoginRequest,
-                                           TransactionRequest transactionRequest) {
+                                           TransactionKafkaRequest transactionKafkaRequest) {
         return webClient.post()
                 .uri("http://localhost:9090/clients/login")
                 .bodyValue(bankServiceLoginRequest)
                 .retrieve()
                 .bodyToMono(String.class)
                 .doOnError(_ -> {
-                    kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionRequest);
+                    kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
                     throw new BankServiceServerNotAvailableException();
                 })
                 .block();

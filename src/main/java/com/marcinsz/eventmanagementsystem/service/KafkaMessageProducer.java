@@ -4,7 +4,7 @@ import com.marcinsz.eventmanagementsystem.configuration.KafkaConfig;
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.kafka.KafkaEventDto;
 import com.marcinsz.eventmanagementsystem.kafka.KafkaTransactionRequest;
-import com.marcinsz.eventmanagementsystem.request.TransactionRequest;
+import com.marcinsz.eventmanagementsystem.request.TransactionKafkaRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +16,8 @@ public class KafkaMessageProducer {
     private final KafkaTransactionRequest kafkaTransactionRequest;
     private final KafkaEventDto kafkaEventDto;
 
-    public void sendTransactionRequestMessageToExpectingPaymentsTopic(TransactionRequest transactionRequest){
-        kafkaTransactionRequest.sendMessage(kafkaConfig.getPaymentTopic(),transactionRequest);
+    public void sendTransactionRequestMessageToExpectingPaymentsTopic(TransactionKafkaRequest transactionKafkaRequest){
+        kafkaTransactionRequest.sendMessage(kafkaConfig.getPaymentTopic(), transactionKafkaRequest);
     }
 
     public void sendCreatedEventMessageToAllEventsTopic(EventDto eventDto){
