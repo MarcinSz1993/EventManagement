@@ -91,14 +91,14 @@ public class PaymentService {
                             .build());
             validateTicket(userTicket);
             TransactionKafkaRequest transactionKafkaRequest = TransactionMapper.convertBuyTicketsFromCartRequestToTransactionRequest(buyTicketsFromCartRequest);
-            transactionKafkaRequest.setAmount(cart.getTotalPrice());
+            transactionKafkaRequest.setAmount(event.getTicketPrice());
             transactionKafkaRequest.setUserId(user.getId());
             transactionKafkaRequest.setEventId(event.getId());
             transactionKafkaRequest.setOrganizerBankAccountNumber(organizerAccountNumber);
             String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest, transactionKafkaRequest);
             prepareDataForTransaction(userTicket, transactionKafkaRequest, bankServiceToken);
-            cart.getEvents().remove(eventName);
         }
+        cart.getEvents().clear();
     }
 
     private void validateTicket(Ticket userTicket) {
