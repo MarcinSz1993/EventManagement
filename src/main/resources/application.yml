@@ -93,3 +93,8 @@ server:
         http-only: true
         max-age: 15m
         same-site: strict
+
+bankService:
+  url: http://localhost:9090/
+  userLogin: clients/login
+  transaction: transactions/
