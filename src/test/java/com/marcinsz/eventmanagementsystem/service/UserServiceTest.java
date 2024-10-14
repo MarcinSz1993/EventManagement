@@ -1,16 +1,16 @@
 package com.marcinsz.eventmanagementsystem.service;
 
+import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.exception.BadCredentialsException;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
-import com.marcinsz.eventmanagementsystem.model.AuthenticationResponse;
-import com.marcinsz.eventmanagementsystem.model.CreateUserResponse;
-import com.marcinsz.eventmanagementsystem.model.Role;
-import com.marcinsz.eventmanagementsystem.model.User;
+import com.marcinsz.eventmanagementsystem.model.*;
+import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -19,7 +19,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,15 +34,20 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
-
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private EventRepository eventRepository;
     @Mock
     private JwtService jwtService;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
-    AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
+    @Mock
+    private HttpSession httpSession;
+    @Mock
+    private HttpServletRequest httpServletRequest;
 
     @BeforeEach
     void setUp() {
@@ -135,7 +143,7 @@ class UserServiceTest {
                 .events(Collections.emptyList())
                 .organizedEvents(Collections.emptyList())
                 .build();
-        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+
         AuthenticationRequest authenticationRequest = new AuthenticationRequest
                 ("johnny","encodedPassword");
         AuthenticationResponse expectedResponse = new AuthenticationResponse
@@ -143,8 +151,10 @@ class UserServiceTest {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken
                 (authenticationRequest.getUsername(),authenticationRequest.getPassword());
 
+        Mockito.when(httpServletRequest.getSession()).thenReturn(httpSession);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(usernamePasswordAuthenticationToken);
         when(userRepository.findByUsername(authenticationRequest.getUsername())).thenReturn(Optional.ofNullable(user));
+        assert user != null;
         when(jwtService.generateToken(user)).thenReturn("mockedToken");
 
         AuthenticationResponse response = userService.login(authenticationRequest,httpServletRequest);
@@ -163,5 +173,81 @@ class UserServiceTest {
         BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> userService.login(authenticationRequest,request));
         assertEquals("You typed incorrect login or password.",exception.getMessage());
     }
+
+    @Test
+    public void getEventsBasedOnUserPreferencesShouldReturnEventsWithMostPopularTargetBasedOnUserPreferences(){
+        String token = "token";
+        User user = createTestUser();
+        Event event1 = createTestEvent(user);
+        Event event2 = createTestEvent(user);
+        event2.setEventName("Test event 2");
+
+        Event event3 = createTestEvent(user);
+        event3.setEventName("Test event 3");
+        event3.setEventTarget(EventTarget.ADULTS_ONLY);
+
+        Event event4 = createTestEvent(user);
+        event4.setEventName("Test event 4");
+        event4.setEventTarget(EventTarget.CHILDREN);
+
+        Event event5 = createTestEvent(user);
+        event5.setEventName("Test event 5");
+
+        user.setEvents(List.of(event1, event2, event3,event4,event5));
+        String username = user.getUsername();
+
+        EventTarget userPreference = EventTarget.EVERYBODY; //Because most user's events have target EVERYBODY.
+
+        Mockito.when(jwtService.extractUsername(token)).thenReturn(username);
+        Mockito.when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        Mockito.when(eventRepository.findAllByEventTarget(userPreference)).thenReturn(List.of(event1,event2,event5));
+
+        List<EventDto> actualList = userService.getEventsBasedOnUserPreferences(token);
+        assertEquals(3, actualList.size());
+        assertEquals(EventTarget.EVERYBODY,actualList.get(0).getEventTarget());
+        assertEquals(EventTarget.EVERYBODY,actualList.get(1).getEventTarget());
+        assertEquals(EventTarget.EVERYBODY,actualList.get(2).getEventTarget());
+
+
+        Mockito.verify(jwtService).extractUsername(token);
+        Mockito.verify(userRepository).findByUsername(username);
+        Mockito.verify(eventRepository).findAllByEventTarget(userPreference);
+    }
+
+    private Event createTestEvent(User user) {
+        return Event.builder()
+                .id(1L)
+                .eventName("Test Event")
+                .eventDescription("Example description")
+                .location("Lublin")
+                .maxAttendees(10)
+                .eventDate(LocalDate.of(2024, 6, 20))
+                .eventStatus(EventStatus.ACTIVE)
+                .ticketPrice(100.0)
+                .eventTarget(EventTarget.EVERYBODY)
+                .createdDate(LocalDateTime.of(2024, 1, 6, 10, 0))
+                .modifiedDate(null)
+                .participants(new ArrayList<>())
+                .organizer(user)
+                .build();
+    }
+
+    private User createTestUser() {
+        return User.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Smith")
+                .email("john@smith.com")
+                .username("johnny")
+                .password("encodedPassword")
+                .birthDate(LocalDate.of(1993, 4, 19))
+                .role(Role.USER)
+                .phoneNumber("123456789")
+                .accountNumber("1234567890")
+                .accountStatus("ACTIVE")
+                .build();
+    }
+
+
 
 }

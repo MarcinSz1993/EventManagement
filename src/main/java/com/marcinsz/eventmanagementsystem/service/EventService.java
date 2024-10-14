@@ -90,7 +90,6 @@ public class EventService {
         }
 
         foundEvent.setModifiedDate(LocalDateTime.now());
-
         eventRepository.save(foundEvent);
         return EventMapper.convertEventToEventDto(foundEvent);
     }
@@ -108,7 +107,7 @@ public class EventService {
     public void joinEvent(JoinEventRequest joinEventRequest, String eventName,String token) {
 
         String username = jwtService.extractUsername(token);
-        User foundUserByToken = userRepository.findByUsername(username).orElseThrow();
+        User foundUserByToken = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
         if(!foundUserByToken.getEmail().equals(joinEventRequest.email)){
             throw new IllegalArgumentException("You can use your email only!");
         }
