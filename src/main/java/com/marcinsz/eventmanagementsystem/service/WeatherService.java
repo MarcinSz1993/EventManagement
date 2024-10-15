@@ -20,7 +20,8 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
-public class WeatherService {
+public class
+WeatherService {
 
     private final WebClient webClient;
     private final EventRepository eventRepository;
