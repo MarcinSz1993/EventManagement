@@ -16,7 +16,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 
 class CartServiceTest {
@@ -45,7 +45,7 @@ class CartServiceTest {
         Event event2 = createTestEvent(user);
         event2.setEventName("Test Event 2");
 
-        Cart cart = new Cart(new HashMap<>());
+        Cart cart = new Cart(new LinkedHashMap<>());
         cart.addTicket(event1);
         Mockito.when(httpServletRequest.getSession()).thenReturn(session);
         Mockito.when(session.getAttribute("cart")).thenReturn(cart);
@@ -67,7 +67,7 @@ class CartServiceTest {
         Event event = createTestEvent(user);
 
         Mockito.when(httpServletRequest.getSession()).thenReturn(session);
-        Mockito.when(session.getAttribute("cart")).thenReturn(new Cart(new HashMap<>()));
+        Mockito.when(session.getAttribute("cart")).thenReturn(new Cart(new LinkedHashMap<>()));
         Mockito.when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
 
         cartService.addToCart(eventId, httpServletRequest);
@@ -97,7 +97,7 @@ class CartServiceTest {
         Event event1 = createTestEvent(user);
         Event event2 = createTestEvent(user);
         event2.setEventName("Event to delete");
-        Cart cart = new Cart(new HashMap<>());
+        Cart cart = new Cart(new LinkedHashMap<>());
         cart.addTicket(event1);
         cart.addTicket(event2);
         String eventNameToDelete = "Event to delete";
@@ -142,7 +142,7 @@ class CartServiceTest {
         Event event3 = createTestEvent(user);
         event3.setEventName("Test Event 3");
 
-        Cart cart = new Cart(new HashMap<>());
+        Cart cart = new Cart(new LinkedHashMap<>());
         cart.addTicket(event1);
         cart.addTicket(event2);
         cart.addTicket(event3);
@@ -163,7 +163,7 @@ class CartServiceTest {
 
     @Test
     public void showCartShouldReturnEmptyHashMapWhenThereAreNoTicketsInCart(){
-        Cart cart = new Cart(new HashMap<>());
+        Cart cart = new Cart(new LinkedHashMap<>());
         Mockito.when(httpServletRequest.getSession()).thenReturn(session);
         Mockito.when(session.getAttribute("cart")).thenReturn(cart);
 

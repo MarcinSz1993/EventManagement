@@ -5,14 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 @Data
 @Component
 @AllArgsConstructor
 @NoArgsConstructor
 public class Cart {
-    private HashMap<String, Double> events;
+    private LinkedHashMap<String, Double> events;
 
     public void addTicket(Event event) {
         events.put(event.getEventName(), event.getTicketPrice());

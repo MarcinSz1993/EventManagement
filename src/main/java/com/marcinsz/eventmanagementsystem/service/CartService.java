@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +18,7 @@ public class CartService {
 
     public void addToCart(Long eventId, HttpServletRequest httpServletRequest) {
         if(httpServletRequest.getSession().getAttribute("cart") == null) {
-            httpServletRequest.getSession().setAttribute("cart", new Cart(new HashMap<>()));
+            httpServletRequest.getSession().setAttribute("cart", new Cart(new LinkedHashMap<>()));
         }
         Cart cart = getCart(httpServletRequest);
         Event event = getEvent(eventId);
