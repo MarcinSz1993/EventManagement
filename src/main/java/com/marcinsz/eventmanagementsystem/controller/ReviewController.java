@@ -19,8 +19,9 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public ResponseEntity<ReviewDto> writeReview(@Valid @RequestBody WriteReviewRequest writeReviewRequest,
-                                                 @CookieValue String token){
+    public ResponseEntity<ReviewDto> writeReview(
+                                                @Valid @RequestBody WriteReviewRequest writeReviewRequest,
+                                                @CookieValue String token){
         ReviewDto reviewDto = reviewService.writeReview(writeReviewRequest, token);
         return ResponseEntity.ok(reviewDto);
     }

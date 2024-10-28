@@ -1,6 +1,8 @@
-
+version: '3.8'
 
 services:
+
+
   eventmanagement_database:
     image: postgres
     volumes:
@@ -13,40 +15,16 @@ services:
       - "5432:5432"
 
   eventmanagement_app:
-    image: marcinsz1993/event_management_app:v2.0
+    image: marcinsz1993/event_management_app:v5.0
     ports:
       - "8080:8080"
     depends_on:
       - eventmanagement_database
-      - zookeeper
-      - kafka
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://eventmanagement_database:5432/EventManagementDB
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: qwerty
-
-  zookeeper:
-    image: wurstmeister/zookeeper
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ALLOW_ANONYMOUS_LOGIN: yes
-
-  kafka:
-    image: wurstmeister/kafka
-    container_name: kafka
-    ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
-
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-
-
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
 volumes:
   eventmanagement_postgres_data:
-

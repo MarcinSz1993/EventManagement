@@ -185,7 +185,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com/marcinsz/eventmanagementsystem/EventManagementSystemApplication</mainClass>
+                    <mainClass>com.marcinsz.eventmanagementsystem.EventManagementSystemApplication</mainClass>
                 </configuration>
             </plugin>
             <plugin>

@@ -37,7 +37,7 @@ public class ReviewService {
         }
 
         List<Event> userEvents = user.getEvents();
-        if (!isParticipant(userEvents, requestEventName)) {
+        if (!isParticipant(userEvents, requestEventName) && !event.getParticipants().contains(user)) {
             throw new UserNotParticipantException(username, requestEventName);
         }
         Review review = Review.builder()
