@@ -1,6 +1,8 @@
 package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
+import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
+import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
@@ -9,13 +11,17 @@ import com.marcinsz.eventmanagementsystem.service.EventService;
 import com.marcinsz.eventmanagementsystem.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/events")
@@ -25,33 +31,58 @@ public class EventController {
     private final JwtService jwtService;
 
     @PostMapping
-    public EventDto createEvent(@RequestBody @Valid CreateEventRequest createEventRequest, @CookieValue String token) {
-
+    public ResponseEntity<EventDto> createEvent(
+                                @RequestBody @Valid CreateEventRequest createEventRequest,
+                                @CookieValue String token) {
         String username = jwtService.extractUsername(token);
         User user = eventService.findByUsername(username);
-        return eventService.createEvent(createEventRequest, user);
+        EventDto event = eventService.createEvent(createEventRequest, user);
+        URI newEventLocation = URI.create(String.format("/events/%d", event.getId()));
+        return ResponseEntity.created(newEventLocation).body(event);
     }
 
     @PutMapping
-    public ResponseEntity<EventDto> updateEvent(@RequestBody UpdateEventRequest updateEventRequest, @RequestParam Long eventId, @CookieValue String token) {
-        EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, token);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
+    public ResponseEntity<EventDto> updateEvent(
+                                                @RequestBody @Valid UpdateEventRequest updateEventRequest,
+                                                @RequestParam Long eventId,
+                                                @CookieValue String token) {
+        try {
+            EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, token);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
+        } catch (EventNotFoundException e) {
+            log.info("Event with id {} not found", eventId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @GetMapping
-    public List<EventDto> showAllUserEvents(@RequestParam String username) {
-        return eventService.showAllOrganizerEvents(username);
+    public ResponseEntity<List<EventDto>> showAllOrganizerEvents(@RequestParam String username) {
+        try {
+            List<EventDto> eventDtos = eventService.showAllOrganizerEvents(username);
+            if(eventDtos.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK)
+                        .header("Message","User " + username + " does not have any events")
+                        .body(Collections.emptyList());
+
+            }
+            return ResponseEntity.ok().body(eventDtos);
+        } catch (UserNotFoundException ex){
+            log.info("User with username {} not found", username);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @PutMapping("/join")
-    public ResponseEntity<String> joinEvent(@RequestBody @Valid JoinEventRequest joinEventRequest, @RequestParam String eventName, @CookieValue String token) {
+    public ResponseEntity<String> joinEvent(
+            @RequestBody @Valid JoinEventRequest joinEventRequest,
+            @RequestParam String eventName,
+            @CookieValue String token) {
+
         try {
             eventService.joinEvent(joinEventRequest, eventName, token);
-            return ResponseEntity.ok("You joined to the event " + eventName.toUpperCase() + ".");
+            return ResponseEntity.ok(String.format("You joined to the event %s.", eventName.toUpperCase()));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(exception.getMessage());
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -59,7 +90,7 @@ public class EventController {
     public ResponseEntity<String> deleteEvent(@RequestParam Long eventId, @CookieValue String token) {
         try {
             String eventName = eventService.deleteEvent(eventId, token);
-            return ResponseEntity.ok("You deleted event " + eventName);
+            return ResponseEntity.ok(String.format("You deleted event %s", eventName));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());
         }

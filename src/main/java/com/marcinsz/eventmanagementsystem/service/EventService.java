@@ -55,36 +55,35 @@ public class EventService {
         String organiserUsername = foundEvent.getOrganizer().getUsername();
         String usernameExtractedFromToken = jwtService.extractUsername(token);
 
-        String eventName = updateEventRequest.getEventName();
-        String eventDescription = updateEventRequest.getEventDescription();
-        String location = updateEventRequest.getLocation();
-        Integer maxAttendees = updateEventRequest.getMaxAttendees();
-        LocalDate eventDate = updateEventRequest.getEventDate();
-        Double ticketPrice = updateEventRequest.getTicketPrice();
-        EventTarget eventTarget = updateEventRequest.getEventTarget();
-
         if(!organiserUsername.equals(usernameExtractedFromToken)){
             throw new NotYourEventException();
         }
 
+        String eventName = updateEventRequest.getEventName();
         if(eventName != null && !eventName.isEmpty()){
             foundEvent.setEventName(eventName);
         }
+        String eventDescription = updateEventRequest.getEventDescription();
         if(eventDescription != null && !eventDescription.isEmpty()){
             foundEvent.setEventDescription(eventDescription);
         }
+        String location = updateEventRequest.getLocation();
         if(location != null && !location.isEmpty()){
             foundEvent.setLocation(location);
         }
+        Integer maxAttendees = updateEventRequest.getMaxAttendees();
         if(maxAttendees != null){
             foundEvent.setMaxAttendees(maxAttendees);
         }
+        LocalDate eventDate = updateEventRequest.getEventDate();
         if(eventDate != null){
             foundEvent.setEventDate(eventDate);
         }
+        Double ticketPrice = updateEventRequest.getTicketPrice();
         if(ticketPrice != null){
             foundEvent.setTicketPrice(ticketPrice);
         }
+        EventTarget eventTarget = updateEventRequest.getEventTarget();
         if(eventTarget != null){
             foundEvent.setEventTarget(eventTarget);
         }
