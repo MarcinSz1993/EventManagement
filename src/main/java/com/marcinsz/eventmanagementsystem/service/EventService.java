@@ -48,6 +48,11 @@ public class EventService {
         return eventDto;
     }
 
+    public EventDto getEventById(Long eventId){
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+        return EventMapper.convertEventToEventDto(event);
+    }
+
     @CacheEvict(cacheNames = "events",allEntries = true)
     public EventDto updateEvent(UpdateEventRequest updateEventRequest,Long eventId,String token) {
         Event foundEvent = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));

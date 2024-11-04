@@ -2,9 +2,9 @@ package com.marcinsz.eventmanagementsystem.exception;
 
 public class EventNotFoundException extends RuntimeException{
     public EventNotFoundException(Long id){
-        super("The event with id: " + id + " does not exist.");
+        super(String.format("Event with id %d not found", id));
     }
     public EventNotFoundException(String eventName){
-        super("The event with event name: " + eventName.toUpperCase() + " does not exist.");
+        super(String.format("The event with event name: %s does not exists.",eventName.toUpperCase()));
     }
 }

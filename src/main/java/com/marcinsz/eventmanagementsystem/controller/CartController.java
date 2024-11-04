@@ -18,8 +18,9 @@ public class CartController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> addToCart(@RequestParam Long eventId,
                                             HttpServletRequest httpServletRequest) {
-        cartService.addToCart(eventId, httpServletRequest);
-        return ResponseEntity.ok("Ticket has been added to the cart.");
+            cartService.addToCart(eventId, httpServletRequest);
+
+            return ResponseEntity.ok("Ticket has been added to the cart.");
     }
 
     @GetMapping
@@ -32,6 +33,7 @@ public class CartController {
     public ResponseEntity<String> removeTicketFromCart(String eventName,
                                                        HttpServletRequest httpServletRequest) {
         cartService.removeFromCart(eventName, httpServletRequest);
-        return ResponseEntity.ok().body("Ticket for event " + eventName.toUpperCase() + " has been removed from the cart.");
+        //return ResponseEntity.ok().body("Ticket for event " + eventName.toUpperCase() + " has been removed from the cart.");
+        return ResponseEntity.ok().body(String.format("Ticket for event %s has been removed from the cart.", eventName.toUpperCase()));
     }
 }

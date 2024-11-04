@@ -30,6 +30,12 @@ public class EventController {
     private final EventService eventService;
     private final JwtService jwtService;
 
+    @GetMapping("{eventId}")
+    public ResponseEntity<EventDto> getEvent(@PathVariable Long eventId){
+        EventDto eventDto = eventService.getEventById(eventId);
+        return ResponseEntity.ok(eventDto);
+    }
+
     @PostMapping
     public ResponseEntity<EventDto> createEvent(
                                 @RequestBody @Valid CreateEventRequest createEventRequest,

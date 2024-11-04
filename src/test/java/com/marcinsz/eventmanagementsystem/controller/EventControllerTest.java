@@ -246,7 +246,7 @@ class EventControllerTest {
 
         assertNotNull(response);
         assertEquals(expectedEventDto, response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(token);
         Mockito.verify(eventService, Mockito.times(1)).findByUsername(username);
