@@ -113,7 +113,7 @@ class WeatherServiceTest {
         Mockito.when(eventRepository.findById(notExistingEventId)).thenReturn(Optional.empty());
 
         EventNotFoundException eventNotFoundException = assertThrows(EventNotFoundException.class, () -> weatherService.weatherFromApi(notExistingEventId));
-        assertEquals("The event with id: " + notExistingEventId + " does not exist.",eventNotFoundException.getMessage());
+        assertEquals("Event with id " + notExistingEventId + " not found",eventNotFoundException.getMessage());
 
         Mockito.verify(eventRepository).findById(notExistingEventId);
     }

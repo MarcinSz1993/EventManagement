@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WeatherController {
     private final WeatherService weatherService;
+
     @GetMapping
     public WeatherDto getWeatherOnEventDay(@RequestParam Long eventId) {
         return weatherService.weatherFromApi(eventId);

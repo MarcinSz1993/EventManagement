@@ -85,7 +85,7 @@ class CartServiceTest {
         Mockito.when(eventRepository.findById(notExistingEventId)).thenReturn(Optional.empty());
 
         EventNotFoundException eventNotFoundException = Assertions.assertThrows(EventNotFoundException.class, () -> cartService.addToCart(notExistingEventId, httpServletRequest));
-        Assertions.assertEquals("The event with id: " + notExistingEventId + " does not exist.",eventNotFoundException.getMessage());
+        Assertions.assertEquals("Event with id " + notExistingEventId + " not found",eventNotFoundException.getMessage());
 
         Mockito.verify(httpServletRequest,Mockito.atLeastOnce()).getSession();
         Mockito.verify(eventRepository).findById(notExistingEventId);
@@ -126,7 +126,7 @@ class CartServiceTest {
         Mockito.when(eventRepository.findByEventName(notExistingEventName)).thenReturn(Optional.empty());
 
         EventNotFoundException eventNotFoundException = Assertions.assertThrows(EventNotFoundException.class, () -> cartService.removeFromCart(notExistingEventName, httpServletRequest));
-        Assertions.assertEquals("The event with event name: "  + notExistingEventName.toUpperCase() +  " does not exist.",eventNotFoundException.getMessage());
+        Assertions.assertEquals("The event with event name: "  + notExistingEventName.toUpperCase() +  " does not exists.",eventNotFoundException.getMessage());
 
         Mockito.verify(httpServletRequest,Mockito.times(1)).getSession();
         Mockito.verify(eventRepository).findByEventName(notExistingEventName);

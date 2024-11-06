@@ -1,0 +1,99 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/EventManagementDB
+    username: postgres
+    password: ${PG_PASS:qwerty}
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
+
+  jackson:
+    property-naming-strategy: LOWER_CAMEL_CASE
+
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    config:
+      allEventsTopic: "allEvents"
+      cancelledEventsTopic: "cancelledEvents"
+      bankServiceGroupId: "bank-service"
+      paymentTopic: "expectingPayments"
+      completedPaymentsTopic: "completedTransactions"
+      eventManagementGroupId: "EventManagement-group"
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.trusted.packages: '*'
+
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+
+      allEventsConsumer:
+        group-id: "${spring.kafka.config.groupId}"
+        properties:
+          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto
+          spring.json.trusted.packages: '*'
+
+      cancelledEventsConsumer:
+        group-id: "${spring.kafka.config.groupId}"
+        properties:
+          spring.json.value.default.type: com.marcinsz.eventmanagementsystem.dto.EventDto
+          spring.json.trusted.packages: '*'
+
+      completedPaymentsConsumer:
+        group-id: "${spring.kafka.config.bankServiceGroupId}"
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: marcinjavadev93@gmail.com
+    password: utaq xtbb gggf zorb
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+weather:
+  api:
+    apiKey: 80748648b31e475ba43112900240208
+    baseUrl: https://api.weatherapi.com/v1/forecast.json
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    root: info
+
+server:
+  servlet:
+    session:
+      timeout: 15m
+      cookie:
+        http-only: true
+        max-age: 15m
+        same-site: strict
+
+bankService:
+  url: http://localhost:9090/
+  userLogin: clients/login
+  transaction: transactions/

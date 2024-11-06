@@ -621,7 +621,7 @@ class EventServiceTest {
         Mockito.when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
 
         EventNotFoundException eventNotFoundException = assertThrows(EventNotFoundException.class, () -> eventService.updateEvent(updateEventRequest, eventId, token));
-        assertEquals("The event with id: " + eventId + " does not exist.",eventNotFoundException.getMessage());
+        assertEquals("Event with id " + eventId + " not found",eventNotFoundException.getMessage());
 
         Mockito.verify(eventRepository).findById(eventId);
         Mockito.verify(jwtService,Mockito.never()).extractUsername(token);
