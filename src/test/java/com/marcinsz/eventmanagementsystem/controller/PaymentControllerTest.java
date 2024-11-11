@@ -77,7 +77,7 @@ class PaymentControllerTest {
         String token = "token";
         Mockito.doThrow(TicketAlreadyBoughtException.class).when(paymentService).buyTicket(buyTicketRequest,token);
 
-        assertThrows(TicketAlreadyBoughtException.class,() -> paymentController.buyTicket(buyTicketRequest,token));
+        assertThrows(TicketAlreadyBoughtException.class,() -> paymentController.buyTicket(token,buyTicketRequest));
     }
 
     @Test
@@ -86,7 +86,7 @@ class PaymentControllerTest {
         String token = "token";
         Mockito.doThrow(BankServiceServerNotAvailableException.class).when(paymentService).buyTicket(buyTicketRequest,token);
 
-        Assertions.assertThatThrownBy(() -> paymentController.buyTicket(buyTicketRequest,token))
+        Assertions.assertThatThrownBy(() -> paymentController.buyTicket(token,buyTicketRequest))
                 .isInstanceOf(BankServiceServerNotAvailableException.class);
 
 
@@ -95,7 +95,7 @@ class PaymentControllerTest {
         BuyTicketRequest buyTicketRequest = createTestBuyTicketRequest();
         String token = "token";
         Mockito.doNothing().when(paymentService).buyTicket(buyTicketRequest,token);
-        ResponseEntity<String> response = paymentController.buyTicket(buyTicketRequest, token);
+        ResponseEntity<String> response = paymentController.buyTicket(token,buyTicketRequest);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals("Congratulations! You have successfully buy a ticket!",response.getBody());

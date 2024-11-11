@@ -9,6 +9,7 @@ import lombok.Data;
 public class ExecuteTransactionRequest {
     private String senderAccountNumber;
     private double amount;
+    private String password;
     private TransactionType transactionType;
     private String recipientAccountNumber;
 }

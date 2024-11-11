@@ -32,6 +32,7 @@ spring:
       bankServiceGroupId: "bank-service"
       paymentTopic: "expectingPayments"
       completedPaymentsTopic: "completedTransactions"
+      failedPaymentsTopic: "failedTransactions"
       eventManagementGroupId: "EventManagement-group"
 
     producer:

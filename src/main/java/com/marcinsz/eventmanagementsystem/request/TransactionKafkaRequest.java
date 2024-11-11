@@ -12,9 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TransactionKafkaRequest {
     private String accountNumber;
+    private String password;
     private double amount;
     private TransactionType transactionType;
     private Long eventId;
     private Long userId;
     private String organizerBankAccountNumber;
+    private String reasonOfFail;
 }

@@ -1,7 +1,9 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
+import com.marcinsz.eventmanagementsystem.dto.OrganiserDto;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
+import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -31,6 +33,23 @@ public class NotificationService {
         mailSender.send(message);
     }
 
+    public void sendInformationForUser(String message, User user) throws MessagingException {
+        MimeMessage informationForUser = createInformationForUser(message, user);
+        mailSender.send(informationForUser);
+    }
+
+    public MimeMessage createInformationForUser(String message, User user) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage,true);
+        Context context = setThymeleafContextForInformation(message);
+        String htmlContent = templateEngine.process("email/InformationForUserNotification", context);
+        String subject = "Info about payment";
+        mimeMessageHelper.setSubject(subject);
+        mimeMessageHelper.setText(htmlContent,true);
+        mimeMessageHelper.addTo(user.getEmail());
+        return mimeMessage;
+    }
+
     public MimeMessage createNewMessage(EventDto eventDto) throws MessagingException {
         List<String> allUsersEmails = userRepository.getEmailsFromAdultUsers(LocalDate.now().minusYears(18));
         allUsersEmails.remove(eventDto.getOrganiser().getEmail());
@@ -51,16 +70,24 @@ public class NotificationService {
         return message;
     }
 
+    public Context setThymeleafContextForInformation(String message){
+        Context context = new Context();
+        context.setVariable("message", message);
+        return context;
+    }
+
     public Context setThymeleafContext(EventDto eventDto) {
         Context context = new Context();
+        OrganiserDto organiser = eventDto.getOrganiser();
+
         context.setVariable("eventName", eventDto.getEventName());
         context.setVariable("eventDescription", eventDto.getEventDescription());
         context.setVariable("eventLocation", eventDto.getEventLocation());
         context.setVariable("eventDate", eventDto.getEventDate().toString());
-        context.setVariable("organiserFirstName", eventDto.getOrganiser().getFirstName());
-        context.setVariable("organiserLastName", eventDto.getOrganiser().getLastName());
-        context.setVariable("organiserUserName", eventDto.getOrganiser().getUserName());
-        context.setVariable("organiserPhoneNumber", eventDto.getOrganiser().getPhoneNumber());
+        context.setVariable("organiserFirstName", organiser.getFirstName());
+        context.setVariable("organiserLastName", organiser.getLastName());
+        context.setVariable("organiserUserName", organiser.getUserName());
+        context.setVariable("organiserPhoneNumber", organiser.getPhoneNumber());
         return context;
     }
 

@@ -123,6 +123,11 @@ public class ControllerAdvisor {
     public ResponseEntity<String> notExistingEventInTheCartHandler(Exception ex){
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(ex.getMessage());
     }
+
+    @ExceptionHandler(BadCredentialsForBankServiceException.class)
+    public ResponseEntity<String> badCredentialsForBankServiceHandler(Exception ex){
+        return ResponseEntity.status(HttpStatus.LOCKED).body(ex.getMessage());
+    }
 }
 
 

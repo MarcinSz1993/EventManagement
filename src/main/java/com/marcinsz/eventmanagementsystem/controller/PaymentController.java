@@ -15,10 +15,12 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PutMapping("/")
-    public ResponseEntity<String> buyTicket(BuyTicketRequest buyTicketRequest,
-                                            @CookieValue String token) {
-        paymentService.buyTicket(buyTicketRequest, token);
-        return ResponseEntity.ok("Congratulations! You have successfully buy a ticket!");
+    public ResponseEntity<String> buyTicket(
+            @RequestHeader("Authorization") String authorizationToken,
+            BuyTicketRequest buyTicketRequest) {
+        String token = authorizationToken.substring("Bearer ".length());
+        String result = paymentService.buyTicket(buyTicketRequest, token);
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/cart")

@@ -14,6 +14,7 @@ public class KafkaConfig {
     private String cancelledEventsTopic;
     private String paymentTopic;
     private String completedPaymentsTopic;
+    private String failedPaymentsTopic;
     private String eventManagementGroupId;
     private String bankServiceGroupId;
 }

@@ -4,10 +4,7 @@ import com.marcinsz.eventmanagementsystem.configuration.BankServiceConfig;
 import com.marcinsz.eventmanagementsystem.exception.*;
 import com.marcinsz.eventmanagementsystem.mapper.BankServiceMapper;
 import com.marcinsz.eventmanagementsystem.mapper.TransactionMapper;
-import com.marcinsz.eventmanagementsystem.model.Cart;
-import com.marcinsz.eventmanagementsystem.model.Event;
-import com.marcinsz.eventmanagementsystem.model.Ticket;
-import com.marcinsz.eventmanagementsystem.model.User;
+import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.TicketRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
@@ -22,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
-import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
@@ -41,17 +37,93 @@ public class PaymentService {
     private final KafkaMessageProducer kafkaMessageProducer;
 
     @Transactional
-    public void buyTicket(BuyTicketRequest buyTicketRequest,
-                          String token) {
+    public String buyTicket(BuyTicketRequest buyTicketRequest,String token) {
+        String username = extractUsernameFromToken(token);
+        User user = fetchUserFromDatabase(username);
+        Event event = fetchEventFromDatabase(buyTicketRequest);
+        boolean ticketExists = validateTicket(user, event);
         BankServiceLoginRequest bankServiceLoginRequest = BankServiceMapper.convertBuyTicketRequestToBankServiceLoginRequest(buyTicketRequest);
-        String username = jwtService.extractUsername(token);
-        User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
-        Event event = eventRepository.findById(buyTicketRequest.getEventId()).orElseThrow(() -> new EventNotFoundException(buyTicketRequest.getEventId()));
-        String organizerBankAccountNumber = event.getOrganizer().getAccountNumber();
-        Ticket userTicket = getAndValidateTicket(user, event);
-        TransactionKafkaRequest transactionKafkaRequest = getTransactionKafkaRequestForSingleTicket(buyTicketRequest, event, user, organizerBankAccountNumber);
-        String bankServiceToken = verifyUserInBankService(bankServiceLoginRequest, transactionKafkaRequest);
-        prepareDataForTransaction(userTicket, transactionKafkaRequest, bankServiceToken);
+        TransactionKafkaRequest transactionKafkaRequest = createTransactionKafkaRequest(buyTicketRequest, user, event);
+        ExecuteTransactionRequest executeTransactionRequest = TransactionMapper.convertTransactionRequestToExecuteTransactionRequest(transactionKafkaRequest);
+        executeTransactionRequest.setPassword(bankServiceLoginRequest.getPassword());
+
+        if (ticketExists) {
+            throw new TicketAlreadyBoughtException("Ticket already bought.");
+        }
+        try {
+            String bankToken = verifyUserInBankService(bankServiceLoginRequest);
+            executeTransactionInBankService(bankToken, executeTransactionRequest);
+            Ticket ticket = createNewTicket(user, event);
+            ticketRepository.save(ticket);
+        }   catch(WebClientRequestException exception){
+            log.error("WebClientRequestException", exception);
+            kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
+            throw new BankServiceServerNotAvailableException();
+        }
+        return "Ticket bought successfully";
+    }
+
+    private boolean validateTicket(User user, Event event) {
+        return ticketRepository.existsTicketByUserAndEvent(user, event);
+    }
+
+    private Event fetchEventFromDatabase(BuyTicketRequest buyTicketRequest) {
+        return eventRepository.findById(buyTicketRequest.getEventId()).orElseThrow(() -> new EventNotFoundException(buyTicketRequest.getEventId()));
+    }
+
+    private User fetchUserFromDatabase(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
+    }
+
+    private String extractUsernameFromToken(String token) {
+        return jwtService.extractUsername(token);
+    }
+
+    private Ticket createNewTicket(User user, Event event) {
+        return Ticket.builder()
+                .hasTicket(true)
+                .user(user)
+                .event(event)
+                .build();
+    }
+
+    private void executeTransactionInBankService(String bankToken, ExecuteTransactionRequest executeTransactionRequest) {
+        webClient.put()
+                .uri("http://localhost:9090/transactions/")
+                .header(HttpHeaders.AUTHORIZATION, bankToken)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.CACHE_CONTROL,"no-cache")
+                .header(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_VALUE)
+                .bodyValue(executeTransactionRequest)
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(10))
+                .block();
+    }
+
+    private TransactionKafkaRequest createTransactionKafkaRequest(BuyTicketRequest buyTicketRequest, User user, Event event) {
+        return TransactionKafkaRequest.builder()
+                .userId(user.getId())
+                .eventId(buyTicketRequest.getEventId())
+                .accountNumber(buyTicketRequest.getNumberAccount())
+                .password(buyTicketRequest.getBankPassword())
+                .amount(event.getTicketPrice())
+                .organizerBankAccountNumber(event.getOrganizer().getAccountNumber())
+                .transactionType(TransactionType.ONLINE_PAYMENT)
+                .build();
+    }
+
+
+    private String verifyUserInBankService(BankServiceLoginRequest bankServiceLoginRequest) {
+        return webClient.post()
+                .uri("http://localhost:9090/clients/login")
+                .bodyValue(bankServiceLoginRequest)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError,
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                                .map(_ -> new BadCredentialsForBankServiceException()))
+                .bodyToMono(String.class)
+                .block();
     }
 
     @Transactional
@@ -63,8 +135,8 @@ public class PaymentService {
         if (cart.getEvents().isEmpty()) {
             throw new EmptyCartException("Your cart is empty.");
         }
-        String username = jwtService.extractUsername(token);
-        User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
+        String username = extractUsernameFromToken(token);
+        User user = fetchUserFromDatabase(username);
         Set<String> setOfEventNames = cart.getEvents().keySet();
         List<String> listOfEventNames = setOfEventNames.stream().toList();
 
@@ -123,55 +195,6 @@ public class PaymentService {
         }
     }
 
-    private void prepareDataForTransaction(Ticket userTicket, TransactionKafkaRequest transactionKafkaRequest, String bankServiceToken) {
-        ExecuteTransactionRequest executeTransactionRequest = TransactionMapper.convertTransactionRequestToExecuteTransactionRequest(transactionKafkaRequest);
-        try {
-            webClient.put()
-                    .uri(bankServiceConfig.getUrl() + bankServiceConfig.getTransaction())
-                    .header(HttpHeaders.AUTHORIZATION, bankServiceToken)
-                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                    .header(HttpHeaders.CACHE_CONTROL, "no-cache")
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .bodyValue(executeTransactionRequest)
-                    .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, response -> {
-                        log.error("Client error while processing transaction: {}", response.statusCode());
-                        return Mono.error(new TransactionProcessClientException("Client error while processing transaction."));
-                    })
-                    .onStatus(HttpStatusCode::is5xxServerError, response -> {
-                        log.error("Server error while processing transaction: {}", response.statusCode());
-                        return Mono.error(new TransactionProcessServerException("Server error while processing transaction."));
-                    })
-                    .bodyToMono(String.class)
-                    .timeout(Duration.ofSeconds(15))
-                    .doOnError(WebClientRequestException.class, ex -> {
-                        log.error("Error during WebClient request: {}", ex.getMessage());
-                        kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
-                        throw new BankServiceServerNotAvailableException();
-                    })
-                    .block();
-        } catch (Exception ex) {
-            log.error("Exception in prepareDataForTransaction: {}", ex.getMessage());
-            throw ex;
-        }
-        userTicket.setHasTicket(true);
-        ticketRepository.save(userTicket);
-    }
-
-    private String verifyUserInBankService(BankServiceLoginRequest bankServiceLoginRequest,
-                                           TransactionKafkaRequest transactionKafkaRequest) {
-        return webClient.post()
-                .uri(bankServiceConfig.getUrl() + bankServiceConfig.getUserLogin())
-                .bodyValue(bankServiceLoginRequest)
-                .retrieve()
-                .bodyToMono(String.class)
-                .doOnError(_ -> {
-                    kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
-                    throw new BankServiceServerNotAvailableException();
-                })
-                .block();
-    }
-
     private Ticket getAndValidateTicket(User user, Event event) {
         Ticket userTicket = ticketRepository.findByUser_IdAndEvent_Id(user.getId(), event.getId()).orElse(Ticket.builder()
                 .hasTicket(false)
@@ -182,12 +205,4 @@ public class PaymentService {
         return userTicket;
     }
 
-    private TransactionKafkaRequest getTransactionKafkaRequestForSingleTicket(BuyTicketRequest buyTicketRequest, Event event, User user, String organizerBankAccountNumber) {
-        TransactionKafkaRequest transactionKafkaRequest = TransactionMapper.convertBuyTicketRequestToTransactionRequest(buyTicketRequest);
-        transactionKafkaRequest.setAmount(event.getTicketPrice());
-        transactionKafkaRequest.setUserId(user.getId());
-        transactionKafkaRequest.setEventId(event.getId());
-        transactionKafkaRequest.setOrganizerBankAccountNumber(organizerBankAccountNumber);
-        return transactionKafkaRequest;
-    }
 }

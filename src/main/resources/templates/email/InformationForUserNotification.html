@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Information</title>
+    <style>
+        body {
+            background-color: aliceblue;
+
+        }
+        h1{
+            align-content: space-around;
+            font-family: Verdana,serif;
+            font-size: large;
+            color: rebeccapurple;
+            padding: 0;
+        }
+        ul{
+            list-style-type: none;
+            padding: 0;
+        }
+        li{
+            font-weight: bold;
+        }
+        p{
+            font-weight: bolder;
+            font-size: large;
+            color: blue;
+            padding-top: 0;
+        }
+    </style>
+</head>
+<body>
+<p>Important note:</p>
+<ul>
+    <li><span th:text="${message}"></span></li>
+</ul>
+</body>
+</html>

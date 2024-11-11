@@ -36,6 +36,7 @@ public class SecurityConfig {
         return httpSecurity.authorizeHttpRequests(registry -> {
                     registry.requestMatchers("/users").permitAll();
                     registry.requestMatchers("/csv/uploadUsers").permitAll();
+                    registry.requestMatchers("payments/test").permitAll();
                     registry.requestMatchers("/users/preferences").hasRole("USER");
                     registry.requestMatchers("/users/login").permitAll();
                     registry.requestMatchers("/weather/").permitAll();

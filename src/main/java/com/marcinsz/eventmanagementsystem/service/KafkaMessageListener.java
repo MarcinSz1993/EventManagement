@@ -67,5 +67,15 @@ public class KafkaMessageListener {
                 .hasTicket(true)
                 .build();
         ticketRepository.save(ticket);
+        log.info(String.format("Ticket for event %s has been purchased",event.getEventName()));
+    }
+
+    @KafkaListener(topics = "${spring.kafka.config.failedPaymentsTopic}",groupId = "${spring.kafka.config.bankServiceGroupId}")
+    public void handleFailedTransactions(String message) throws JsonProcessingException, MessagingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        TransactionKafkaRequest transactionKafkaRequest = objectMapper.readValue(message, TransactionKafkaRequest.class);
+        User user = userRepository.findById(transactionKafkaRequest.getUserId()).orElseThrow(() -> new UserNotFoundException("User not found"));
+        log.info(String.format("Buying ticket for event %s failed due to %s",transactionKafkaRequest.getEventId(),transactionKafkaRequest.getReasonOfFail()));
+        notificationService.sendInformationForUser(String.format("Buying ticket for event %d failed due to %s",transactionKafkaRequest.getEventId(),transactionKafkaRequest.getReasonOfFail()),user);
     }
 }
