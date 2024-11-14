@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "bank.service")
+@ConfigurationProperties(prefix = "bankservice")
 public class BankServiceConfig {
     private String url;
     private String userLogin;

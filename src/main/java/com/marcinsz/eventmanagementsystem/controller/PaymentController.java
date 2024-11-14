@@ -24,10 +24,7 @@ public class PaymentController {
     }
 
     @PutMapping("/cart")
-    public ResponseEntity<String> buyTicketsFromCart(@RequestBody BuyTicketsFromCartRequest buyTicketsFromCartRequest,
-                                                     HttpServletRequest servletRequest,
-                                                     @CookieValue String token){
-        paymentService.buyTicketsFromCart(buyTicketsFromCartRequest,token,servletRequest);
-        return ResponseEntity.ok("Tickets have been purchased.");
+    public ResponseEntity<String> buyTicketsFromCart(@RequestBody BuyTicketsFromCartRequest buyTicketsFromCartRequest, HttpServletRequest servletRequest){
+        return ResponseEntity.ok(paymentService.buyTicketFromCart(buyTicketsFromCartRequest,servletRequest));
     }
 }

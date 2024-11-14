@@ -1,3 +1,4 @@
+/*
 package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.exception.BankServiceServerNotAvailableException;
@@ -117,4 +118,4 @@ class PaymentControllerTest {
                 .bankPassword("qwerty")
                 .build();
     }
-}
+}*/

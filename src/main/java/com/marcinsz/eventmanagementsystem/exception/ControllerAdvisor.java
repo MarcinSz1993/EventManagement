@@ -128,6 +128,11 @@ public class ControllerAdvisor {
     public ResponseEntity<String> badCredentialsForBankServiceHandler(Exception ex){
         return ResponseEntity.status(HttpStatus.LOCKED).body(ex.getMessage());
     }
+
+    @ExceptionHandler(NotEnoughMoneyException.class)
+    public ResponseEntity<String> notEnoughMoneyHandler(Exception ex){
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(ex.getMessage());
+    }
 }
 
 

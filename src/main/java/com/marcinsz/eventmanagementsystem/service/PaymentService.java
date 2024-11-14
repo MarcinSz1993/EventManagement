@@ -19,10 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -37,7 +38,7 @@ public class PaymentService {
     private final KafkaMessageProducer kafkaMessageProducer;
 
     @Transactional
-    public String buyTicket(BuyTicketRequest buyTicketRequest,String token) {
+    public String buyTicket(BuyTicketRequest buyTicketRequest, String token) {
         String username = extractUsernameFromToken(token);
         User user = fetchUserFromDatabase(username);
         Event event = fetchEventFromDatabase(buyTicketRequest);
@@ -55,7 +56,7 @@ public class PaymentService {
             executeTransactionInBankService(bankToken, executeTransactionRequest);
             Ticket ticket = createNewTicket(user, event);
             ticketRepository.save(ticket);
-        }   catch(WebClientRequestException exception){
+        } catch (WebClientRequestException exception) {
             log.error("WebClientRequestException", exception);
             kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
             throw new BankServiceServerNotAvailableException();
@@ -63,20 +64,52 @@ public class PaymentService {
         return "Ticket bought successfully";
     }
 
-    private boolean validateTicket(User user, Event event) {
-        return ticketRepository.existsTicketByUserAndEvent(user, event);
+    @Transactional
+    public String buyTicketFromCart(BuyTicketsFromCartRequest buyTicketRequest
+            , HttpServletRequest httpServletRequest) {
+        String headerAuthorization = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+        String userToken = headerAuthorization.substring("Bearer ".length());
+        String username = extractUsernameFromToken(userToken);
+        User user = fetchUserFromDatabase(username);
+        String bankToken;
+        try {
+            BankServiceLoginRequest bankServiceLoginRequest = BankServiceMapper.convertBuyTicketsFromCartRequestToBankServiceLoginRequest(buyTicketRequest);
+            bankToken = verifyUserInBankService(bankServiceLoginRequest);
+        } catch (WebClientRequestException exception) {
+            log.error("Mamy błąd!");
+            throw new BankServiceServerNotAvailableException();
+        }
+
+        Object userCartFromSession = httpServletRequest.getSession().getAttribute("cart");
+        Cart cart = (Cart) userCartFromSession;
+
+        if (cart.getEvents().isEmpty()) {
+            throw new EmptyCartException("Empty cart.");
+        }
+        List<String> listOfEventNames = cart.getEvents().keySet()
+                .stream()
+                .toList();
+        for (String eventName : listOfEventNames) {
+            Event event = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
+            ticketValidation(user, event);
+            String recipientAccountNumber = event.getOrganizer().getAccountNumber();
+            ExecuteTransactionRequest executeTransactionRequest = createExecuteTransactionRequest(buyTicketRequest, recipientAccountNumber, event);
+            executeTransactionInBankService(bankToken, executeTransactionRequest);
+            Ticket ticket = createNewTicket(user, event);
+            ticketRepository.save(ticket);
+            cart.removeTicket(event);
+        }
+        return "Tickets have been purchased successfully.";
     }
 
-    private Event fetchEventFromDatabase(BuyTicketRequest buyTicketRequest) {
-        return eventRepository.findById(buyTicketRequest.getEventId()).orElseThrow(() -> new EventNotFoundException(buyTicketRequest.getEventId()));
-    }
-
-    private User fetchUserFromDatabase(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
-    }
-
-    private String extractUsernameFromToken(String token) {
-        return jwtService.extractUsername(token);
+    private ExecuteTransactionRequest createExecuteTransactionRequest(BuyTicketsFromCartRequest buyTicketRequest, String recipientAccountNumber, Event event) {
+        return ExecuteTransactionRequest.builder()
+                .password(buyTicketRequest.getBankPassword())
+                .senderAccountNumber(buyTicketRequest.getNumberAccount())
+                .recipientAccountNumber(recipientAccountNumber)
+                .amount(event.getTicketPrice())
+                .transactionType(TransactionType.ONLINE_PAYMENT)
+                .build();
     }
 
     private Ticket createNewTicket(User user, Event event) {
@@ -88,14 +121,23 @@ public class PaymentService {
     }
 
     private void executeTransactionInBankService(String bankToken, ExecuteTransactionRequest executeTransactionRequest) {
+        UriComponentsBuilder baseUrl = UriComponentsBuilder
+                .fromUriString(bankServiceConfig
+                        .getUrl())
+                .path(bankServiceConfig
+                        .getTransaction());
         webClient.put()
-                .uri("http://localhost:9090/transactions/")
+                .uri(baseUrl.toUriString())
                 .header(HttpHeaders.AUTHORIZATION, bankToken)
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.CACHE_CONTROL,"no-cache")
-                .header(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .bodyValue(executeTransactionRequest)
                 .retrieve()
+                .onStatus(httpStatusCode -> httpStatusCode.value() == 402,
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                        .map((Function<String, Throwable>) _ -> new NotEnoughMoneyException()))
+
                 .bodyToMono(String.class)
                 .timeout(Duration.ofSeconds(10))
                 .block();
@@ -113,96 +155,46 @@ public class PaymentService {
                 .build();
     }
 
-
     private String verifyUserInBankService(BankServiceLoginRequest bankServiceLoginRequest) {
+        String fullUrl = UriComponentsBuilder
+                .fromUriString(bankServiceConfig
+                        .getUrl())
+                .path(bankServiceConfig
+                        .getUserLogin())
+                .toUriString();
         return webClient.post()
-                .uri("http://localhost:9090/clients/login")
+                .uri(fullUrl)
                 .bodyValue(bankServiceLoginRequest)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError,
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .map(_ -> new BadCredentialsForBankServiceException()))
                 .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(10))
                 .block();
     }
 
-    @Transactional
-    public void buyTicketsFromCart(BuyTicketsFromCartRequest buyTicketsFromCartRequest,
-                                   String token,
-                                   HttpServletRequest httpServletRequest) {
-        BankServiceLoginRequest bankServiceLoginRequest = BankServiceMapper.convertBuyTicketsFromCartRequestToBankServiceLoginRequest(buyTicketsFromCartRequest);
-        Cart cart = (Cart) httpServletRequest.getSession().getAttribute("cart");
-        if (cart.getEvents().isEmpty()) {
-            throw new EmptyCartException("Your cart is empty.");
-        }
-        String username = extractUsernameFromToken(token);
-        User user = fetchUserFromDatabase(username);
-        Set<String> setOfEventNames = cart.getEvents().keySet();
-        List<String> listOfEventNames = setOfEventNames.stream().toList();
+    private void ticketValidation(User user, Event event) {
+        if (ticketRepository.findByUser_IdAndEvent_Id(user.getId(), event.getId()).isPresent()) {
+            throw new TicketAlreadyBoughtException(String.format("You already bought a ticket for event %s", event.getEventName()));
 
-        boolean isBankServiceAvailable = true;
-
-        for (String eventName : listOfEventNames) {
-            Event event = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
-            String organizerAccountNumber = event.getOrganizer().getAccountNumber();
-            Ticket userTicket = getAndValidateTicket(user, event);
-            TransactionKafkaRequest transactionKafkaRequest = getTransactionKafkaRequestForCart(buyTicketsFromCartRequest, event, user, organizerAccountNumber);
-
-            try {
-                String bankServiceToken = webClient.post()
-                        .uri(bankServiceConfig.getUrl() + bankServiceConfig.getUserLogin())
-                        .bodyValue(bankServiceLoginRequest)
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        .block();
-                ExecuteTransactionRequest executeTransactionRequest = TransactionMapper.convertTransactionRequestToExecuteTransactionRequest(transactionKafkaRequest);
-                webClient.put()
-                        .uri(bankServiceConfig.getUrl() + bankServiceConfig.getTransaction())
-                        .header(HttpHeaders.AUTHORIZATION,bankServiceToken)
-                        .header(HttpHeaders.ACCEPT,MediaType.APPLICATION_JSON_VALUE)
-                        .header(HttpHeaders.CACHE_CONTROL,"no-cache")
-                        .header(HttpHeaders.CONTENT_TYPE,MediaType.APPLICATION_JSON_VALUE)
-                        .bodyValue(executeTransactionRequest)
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        .block();
-
-                userTicket.setHasTicket(true);
-                ticketRepository.save(userTicket);
-            } catch (WebClientRequestException ex){
-                kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
-                isBankServiceAvailable = false;
-            }
-        }
-        if (!isBankServiceAvailable) {
-            throw new BankServiceServerNotAvailableException();
-        }
-        cart.getEvents().clear();
-    }
-
-    private TransactionKafkaRequest getTransactionKafkaRequestForCart(BuyTicketsFromCartRequest buyTicketsFromCartRequest, Event event, User user, String organizerAccountNumber) {
-        TransactionKafkaRequest transactionKafkaRequest = TransactionMapper.convertBuyTicketsFromCartRequestToTransactionRequest(buyTicketsFromCartRequest);
-        transactionKafkaRequest.setAmount(event.getTicketPrice());
-        transactionKafkaRequest.setUserId(user.getId());
-        transactionKafkaRequest.setEventId(event.getId());
-        transactionKafkaRequest.setOrganizerBankAccountNumber(organizerAccountNumber);
-        return transactionKafkaRequest;
-    }
-
-    private void validateTicket(Ticket userTicket) {
-        if (userTicket.isHasTicket()) {
-            throw new TicketAlreadyBoughtException("You have a ticket for this event.");
         }
     }
 
-    private Ticket getAndValidateTicket(User user, Event event) {
-        Ticket userTicket = ticketRepository.findByUser_IdAndEvent_Id(user.getId(), event.getId()).orElse(Ticket.builder()
-                .hasTicket(false)
-                .user(user)
-                .event(event)
-                .build());
-        validateTicket(userTicket);
-        return userTicket;
+    private boolean validateTicket(User user, Event event) {
+        return ticketRepository.existsTicketByUserAndEvent(user, event);
+    }
+
+    private Event fetchEventFromDatabase(BuyTicketRequest buyTicketRequest) {
+        return eventRepository.findById(buyTicketRequest.getEventId()).orElseThrow(() -> new EventNotFoundException(buyTicketRequest.getEventId()));
+    }
+
+    private User fetchUserFromDatabase(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
+    }
+
+    private String extractUsernameFromToken(String token) {
+        return jwtService.extractUsername(token);
     }
 
 }
