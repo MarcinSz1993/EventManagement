@@ -45,7 +45,7 @@ public class PaymentService {
         boolean ticketExists = validateTicket(user, event);
         BankServiceLoginRequest bankServiceLoginRequest = BankServiceMapper.convertBuyTicketRequestToBankServiceLoginRequest(buyTicketRequest);
         TransactionKafkaRequest transactionKafkaRequest = createTransactionKafkaRequest(buyTicketRequest, user, event);
-        ExecuteTransactionRequest executeTransactionRequest = TransactionMapper.convertTransactionRequestToExecuteTransactionRequest(transactionKafkaRequest);
+        ExecuteTransactionRequest executeTransactionRequest = TransactionMapper.convertTransactionKafkaRequestToExecuteTransactionRequest(transactionKafkaRequest);
         executeTransactionRequest.setPassword(bankServiceLoginRequest.getPassword());
 
         if (ticketExists) {
@@ -120,7 +120,7 @@ public class PaymentService {
                 .build();
     }
 
-    private void executeTransactionInBankService(String bankToken, ExecuteTransactionRequest executeTransactionRequest) {
+    protected void executeTransactionInBankService(String bankToken, ExecuteTransactionRequest executeTransactionRequest) {
         UriComponentsBuilder baseUrl = UriComponentsBuilder
                 .fromUriString(bankServiceConfig
                         .getUrl())
@@ -155,7 +155,7 @@ public class PaymentService {
                 .build();
     }
 
-    private String verifyUserInBankService(BankServiceLoginRequest bankServiceLoginRequest) {
+    protected String verifyUserInBankService(BankServiceLoginRequest bankServiceLoginRequest) {
         String fullUrl = UriComponentsBuilder
                 .fromUriString(bankServiceConfig
                         .getUrl())
@@ -181,7 +181,7 @@ public class PaymentService {
         }
     }
 
-    private boolean validateTicket(User user, Event event) {
+    protected boolean validateTicket(User user, Event event) {
         return ticketRepository.existsTicketByUserAndEvent(user, event);
     }
 

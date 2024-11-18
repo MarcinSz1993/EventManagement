@@ -14,7 +14,7 @@ public class TransactionMapper {
     }
 
 
-    public static ExecuteTransactionRequest convertTransactionRequestToExecuteTransactionRequest(TransactionKafkaRequest transactionKafkaRequest) {
+    public static ExecuteTransactionRequest convertTransactionKafkaRequestToExecuteTransactionRequest(TransactionKafkaRequest transactionKafkaRequest) {
         return ExecuteTransactionRequest.builder()
                 .senderAccountNumber(transactionKafkaRequest.getAccountNumber())
                 .password(transactionKafkaRequest.getPassword())
