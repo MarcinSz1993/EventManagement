@@ -3,6 +3,8 @@ package com.marcinsz.eventmanagementsystem.service;
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.exception.BadCredentialsException;
+import com.marcinsz.eventmanagementsystem.exception.UserAlreadyExistsException;
+import com.marcinsz.eventmanagementsystem.exception.UserHasNoPreferencesYetException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
@@ -20,9 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +39,9 @@ public class UserService {
         if (createUserRequest == null) {
             throw new NullPointerException("CreateUserRequest cannot be null!");
         }
+
+        userExists(createUserRequest);
+
         User newUser = UserMapper.convertCreateUserRequestToUser(createUserRequest);
         newUser.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         userRepository.save(newUser);
@@ -70,12 +73,24 @@ public class UserService {
         String username = jwtService.extractUsername(token);
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
 
-        EventTarget userPreferenceTarget = getPreferedEventTarget(user);
-        List<Event> eventsByEventTarget = eventRepository.findAllByEventTarget(userPreferenceTarget);
+        try {
+            EventTarget userPreferenceTarget = getPreferedEventTarget(user);
+            List<Event> eventsByEventTarget = eventRepository.findAllByEventTarget(userPreferenceTarget);
+            Set<Event> setEventsByEventTarget = new HashSet<>(eventsByEventTarget.size());
+            setEventsByEventTarget.addAll(eventsByEventTarget);
 
-        return eventsByEventTarget.stream()
-                .map(EventMapper::convertEventToEventDto)
-                .toList();
+            return setEventsByEventTarget.stream()
+                    .filter(event -> !user.getEvents().contains(event))
+                    .map(EventMapper::convertEventToEventDto)
+                    .toList();
+        } catch (UserHasNoPreferencesYetException e) {
+            List<Event> allEventsForEverybody = eventRepository.findAllByEventTarget(EventTarget.EVERYBODY);
+            Collections.shuffle(allEventsForEverybody);
+            return allEventsForEverybody.stream()
+                    .limit(3)
+                    .map(EventMapper::convertEventToEventDto)
+                    .toList();
+        }
     }
 
     private EventTarget getPreferedEventTarget(User user) {
@@ -86,7 +101,25 @@ public class UserService {
                 .stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
-                .orElseThrow();
+                .orElseThrow(UserHasNoPreferencesYetException::new);
+    }
+
+    private void userExists(CreateUserRequest createUserRequest){
+        if (userRepository.existsByEmail(createUserRequest.getEmail())){
+            throw new UserAlreadyExistsException(String.format("User with email %s already exists!", createUserRequest.getEmail()));
+        }
+
+        if (userRepository.existsByUsername(createUserRequest.getUsername())){
+            throw new UserAlreadyExistsException(String.format("User with username %s already exists!",createUserRequest.getUsername()));
+        }
+
+        if (userRepository.existsByPhoneNumber(createUserRequest.getPhoneNumber())){
+            throw new UserAlreadyExistsException(String.format("User with phone number %s already exists!", createUserRequest.getPhoneNumber()));
+        }
+
+        if (userRepository.existsByAccountNumber(createUserRequest.getAccountNumber())){
+            throw new UserAlreadyExistsException(String.format("User with account number %s already exists!", createUserRequest.getAccountNumber()));
+        }
     }
 }
 

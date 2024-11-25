@@ -1,7 +1,9 @@
 package com.marcinsz.eventmanagementsystem.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -132,6 +134,21 @@ public class ControllerAdvisor {
     @ExceptionHandler(NotEnoughMoneyException.class)
     public ResponseEntity<String> notEnoughMoneyHandler(Exception ex){
         return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> httpMessageNotReadableExceptionHandler(){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body cannot be null!");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> dataIntegrityViolationExceptionHandler(){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("User with a data you provided already exists.");
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> userAlreadyExistsExceptionHandler(Exception ex){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 }
 

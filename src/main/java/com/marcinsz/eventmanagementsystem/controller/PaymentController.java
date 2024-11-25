@@ -17,7 +17,7 @@ public class PaymentController {
     @PutMapping("/")
     public ResponseEntity<String> buyTicket(
             @RequestHeader("Authorization") String authorizationToken,
-            BuyTicketRequest buyTicketRequest) {
+            @RequestBody BuyTicketRequest buyTicketRequest) {
         String token = authorizationToken.substring("Bearer ".length());
         String result = paymentService.buyTicket(buyTicketRequest, token);
         return ResponseEntity.ok(result);

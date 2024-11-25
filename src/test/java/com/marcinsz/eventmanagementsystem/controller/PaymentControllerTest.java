@@ -1,121 +1,77 @@
-/*
 package com.marcinsz.eventmanagementsystem.controller;
 
-import com.marcinsz.eventmanagementsystem.exception.BankServiceServerNotAvailableException;
-import com.marcinsz.eventmanagementsystem.exception.EmptyCartException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marcinsz.eventmanagementsystem.exception.TicketAlreadyBoughtException;
 import com.marcinsz.eventmanagementsystem.request.BuyTicketRequest;
-import com.marcinsz.eventmanagementsystem.request.BuyTicketsFromCartRequest;
 import com.marcinsz.eventmanagementsystem.service.PaymentService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class PaymentControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc(addFilters = false)
+public class PaymentControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private PaymentService paymentService;
 
-    @Mock
-    private HttpServletRequest httpServletRequest;
-
-    @InjectMocks
-    private PaymentController paymentController;
-
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    void setUp() {
+    void setUp(){
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void buyTicketsFromCartShouldHandleBankServiceNotAvailableExceptionWhenTriesToMakeTransactionWhileBankServerOfflineIs(){
-        BuyTicketsFromCartRequest buyTicketsFromCartRequest = buyTicketsFromCartRequest();
-        String token = "token";
+    public void buyTicketShouldHandleTicketAlreadyBoughtException() throws Exception {
+        BuyTicketRequest buyTicketRequest = createBuyTicketRequest();
+        Mockito.when(paymentService.buyTicket(buyTicketRequest,"passwordToken"))
+                .thenThrow(new TicketAlreadyBoughtException("Ticket already bought."));
 
-        Mockito.doThrow(BankServiceServerNotAvailableException.class).when(paymentService).buyTicketsFromCart(buyTicketsFromCartRequest,token,httpServletRequest);
-
-        assertThrows(BankServiceServerNotAvailableException.class,() -> paymentController.buyTicketsFromCart(buyTicketsFromCartRequest,httpServletRequest,token));
+        mockMvc.perform(put("/payments/")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer passwordToken")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(buyTicketRequest)))
+                .andExpect(status().is(409))
+                .andExpect(content().string("Ticket already bought."));
     }
 
     @Test
-    public void buyTicketFromCartShouldHandleEmptyCartExceptionWhenCartIsEmpty(){
-        BuyTicketsFromCartRequest buyTicketsFromCartRequest = buyTicketsFromCartRequest();
-        String token = "token";
+    public void buyTicketSuccessfully() throws Exception {
+        BuyTicketRequest buyTicketRequest = createBuyTicketRequest();
+        Mockito.when(paymentService.buyTicket(buyTicketRequest, "passwordToken"))
+                .thenReturn("Ticket bought successfully");
 
-        Mockito.doThrow(new EmptyCartException("Your cart is empty.")).when(paymentService).buyTicketsFromCart(buyTicketsFromCartRequest,token,httpServletRequest);
-
-        assertThrows(EmptyCartException.class, () -> paymentController.buyTicketsFromCart(buyTicketsFromCartRequest, httpServletRequest, token));
-        Mockito.verify(paymentService,Mockito.times(1)).buyTicketsFromCart(buyTicketsFromCartRequest,token,httpServletRequest);
+        mockMvc.perform(put("/payments/")
+                        .header("Authorization", "Bearer passwordToken")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(buyTicketRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Ticket bought successfully"));
     }
 
-    @Test
-    public void buyTicketsFromCartSuccessfully(){
-        BuyTicketsFromCartRequest buyTicketsFromCartRequest = buyTicketsFromCartRequest();
-        String token = "token";
-        Mockito.doNothing().when(paymentService).buyTicketsFromCart(buyTicketsFromCartRequest,token,httpServletRequest);
-
-        ResponseEntity<String> response = paymentController.buyTicketsFromCart(buyTicketsFromCartRequest, httpServletRequest, token);
-
-        Assertions.assertThat(response.getStatusCode().value()).isEqualTo(200);
-        Assertions.assertThat(response.getBody()).isEqualTo("Tickets have been purchased.");
-
-        Mockito.verify(paymentService,Mockito.times(1)).buyTicketsFromCart(buyTicketsFromCartRequest,token,httpServletRequest);
-    }
-
-    @Test
-    public void buyTicketShouldHandleTicketAlreadyBoughtExceptionWhenUserTriesToBuyTheTicketTwice(){
-        BuyTicketRequest buyTicketRequest = createTestBuyTicketRequest();
-        String token = "token";
-        Mockito.doThrow(TicketAlreadyBoughtException.class).when(paymentService).buyTicket(buyTicketRequest,token);
-
-        assertThrows(TicketAlreadyBoughtException.class,() -> paymentController.buyTicket(token,buyTicketRequest));
-    }
-
-    @Test
-    public void buyTicketShouldHandleBankServiceNotAvailableExceptionWhenTriesToMakeTransactionWhileBankServerOfflineIs() {
-        BuyTicketRequest buyTicketRequest = createTestBuyTicketRequest();
-        String token = "token";
-        Mockito.doThrow(BankServiceServerNotAvailableException.class).when(paymentService).buyTicket(buyTicketRequest,token);
-
-        Assertions.assertThatThrownBy(() -> paymentController.buyTicket(token,buyTicketRequest))
-                .isInstanceOf(BankServiceServerNotAvailableException.class);
-
-
-    }@Test
-    public void successfullyBuyTicketShouldReturnCode200WithSpecifiedCommunicate(){
-        BuyTicketRequest buyTicketRequest = createTestBuyTicketRequest();
-        String token = "token";
-        Mockito.doNothing().when(paymentService).buyTicket(buyTicketRequest,token);
-        ResponseEntity<String> response = paymentController.buyTicket(token,buyTicketRequest);
-
-        assertEquals(200, response.getStatusCode().value());
-        assertEquals("Congratulations! You have successfully buy a ticket!",response.getBody());
-
-        Mockito.verify(paymentService,Mockito.times(1)).buyTicket(buyTicketRequest,token);
-    }
-
-    private BuyTicketsFromCartRequest buyTicketsFromCartRequest(){
-        return BuyTicketsFromCartRequest.builder()
-                .numberAccount("1111111111")
-                .bankPassword("qwerty")
-                .build();
-    }
-
-    private BuyTicketRequest createTestBuyTicketRequest(){
+    BuyTicketRequest createBuyTicketRequest(){
         return BuyTicketRequest.builder()
                 .eventId(1L)
-                .numberAccount("1111111111")
+                .numberAccount("1234567890")
                 .bankPassword("qwerty")
                 .build();
     }
-}*/
+}

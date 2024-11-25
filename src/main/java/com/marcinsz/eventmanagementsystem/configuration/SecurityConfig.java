@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,6 +45,7 @@ public class SecurityConfig {
                     registry.requestMatchers("/v3/api-docs/**").permitAll();
                     registry.requestMatchers("/events").hasAnyRole("USER","ADMIN");
                     registry.requestMatchers("/payments/").hasAnyRole("USER","ADMIN");
+                    registry.requestMatchers("/h2-console/**").permitAll();
                     registry.anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
@@ -51,6 +53,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .headers(httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .build();
     }
 
