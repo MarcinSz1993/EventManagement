@@ -3,14 +3,16 @@ package com.marcinsz.eventmanagementsystem.kafka;
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
-@Component
 @Data
+@Slf4j
+@Component
 @RequiredArgsConstructor
 public class KafkaEventDto implements KafkaMessageSender<EventDto>{
     private final KafkaTemplate<String, EventDto> kafkaTemplate;
@@ -21,10 +23,9 @@ public class KafkaEventDto implements KafkaMessageSender<EventDto>{
             CompletableFuture<SendResult<String, EventDto>> allEvents = kafkaTemplate.send(topic, message);
             allEvents.whenComplete((result, ex) -> {
                 if (ex == null) {
-                    System.out.println("Sent message: " + message +
-                            "with offset: " + result.getRecordMetadata().offset());
+                    log.info("Sent message: {}", message + " with offset: " + result.getRecordMetadata().offset());
                 } else {
-                    System.out.println("Unable to send message: " + message);
+                    log.error("Unable to send message: {}", message);
                 }
             });
         } catch (Exception e) {

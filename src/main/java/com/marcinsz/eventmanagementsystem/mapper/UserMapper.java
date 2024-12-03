@@ -18,7 +18,7 @@ public class UserMapper {
 
     public static UserDto convertUserToUserDto(User user){
         if(user == null){
-            throw new NullPointerException("User should not be null.");
+            throw new IllegalArgumentException("User should not be null.");
         }
         return new UserDto(user.getId(),
                 user.getFirstName(),
@@ -34,7 +34,7 @@ public class UserMapper {
 
     public static User convertCreateUserRequestToUser(CreateUserRequest createUserRequest){
         if(createUserRequest == null){
-            throw new NullPointerException("CreateUserRequest should not be null.");
+            throw new IllegalArgumentException("CreateUserRequest should not be null.");
         }
         return new User(createUserRequest.getFirstName(),
                 createUserRequest.getLastName(),

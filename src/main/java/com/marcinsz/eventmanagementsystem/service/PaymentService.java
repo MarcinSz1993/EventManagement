@@ -1,6 +1,5 @@
 package com.marcinsz.eventmanagementsystem.service;
 
-import com.marcinsz.eventmanagementsystem.configuration.BankServiceConfig;
 import com.marcinsz.eventmanagementsystem.exception.*;
 import com.marcinsz.eventmanagementsystem.mapper.BankServiceMapper;
 import com.marcinsz.eventmanagementsystem.mapper.TransactionMapper;
@@ -14,12 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 import java.util.List;
@@ -29,12 +26,12 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
-    private final WebClient webClient;
+    private final WebClient bankServicePaymentWebClient;
+    private final WebClient bankServiceLoginWebClient;
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final TicketRepository ticketRepository;
-    private final BankServiceConfig bankServiceConfig;
     private final KafkaMessageProducer kafkaMessageProducer;
 
     @Transactional
@@ -62,6 +59,8 @@ public class PaymentService {
             throw new BankServiceServerNotAvailableException();
         }
         return "Ticket bought successfully";
+
+        //dopisać walidację na to, aby nie dało się kupić biletu na wydarzenie z przeszłóści.
     }
 
     @Transactional
@@ -121,17 +120,8 @@ public class PaymentService {
     }
 
     protected void executeTransactionInBankService(String bankToken, ExecuteTransactionRequest executeTransactionRequest) {
-        UriComponentsBuilder baseUrl = UriComponentsBuilder
-                .fromUriString(bankServiceConfig
-                        .getUrl())
-                .path(bankServiceConfig
-                        .getTransaction());
-        webClient.put()
-                .uri(baseUrl.toUriString())
+        bankServicePaymentWebClient.put()
                 .header(HttpHeaders.AUTHORIZATION, bankToken)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .header(HttpHeaders.CACHE_CONTROL, "no-cache")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .bodyValue(executeTransactionRequest)
                 .retrieve()
                 .onStatus(httpStatusCode -> httpStatusCode.value() == 402,
@@ -156,14 +146,8 @@ public class PaymentService {
     }
 
     protected String verifyUserInBankService(BankServiceLoginRequest bankServiceLoginRequest) {
-        String fullUrl = UriComponentsBuilder
-                .fromUriString(bankServiceConfig
-                        .getUrl())
-                .path(bankServiceConfig
-                        .getUserLogin())
-                .toUriString();
-        return webClient.post()
-                .uri(fullUrl)
+
+        return bankServiceLoginWebClient.post()
                 .bodyValue(bankServiceLoginRequest)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError,
@@ -196,5 +180,4 @@ public class PaymentService {
     private String extractUsernameFromToken(String token) {
         return jwtService.extractUsername(token);
     }
-
 }

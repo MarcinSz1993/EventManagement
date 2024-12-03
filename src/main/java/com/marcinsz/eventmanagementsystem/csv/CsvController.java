@@ -10,20 +10,20 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/csv")
+@RequestMapping("/api/csv")
 @RequiredArgsConstructor
 public class CsvController {
 
     private final CsvService csvService;
 
-    @PostMapping(value = "/uploadUsers", consumes = {"multipart/form-data"})
+    @PostMapping(value = "/users", consumes = {"multipart/form-data"})
     public ResponseEntity<Integer> uploadUsers(
             @RequestPart("file") MultipartFile file
     ) throws IOException, CsvException {
         return ResponseEntity.ok().body(csvService.uploadUsers(file));
     }
 
-    @PostMapping(value = "/uploadEvents", consumes = {"multipart/form-data"})
+    @PostMapping(value = "/events", consumes = {"multipart/form-data"})
     public ResponseEntity<String> uploadEvents(
             @RequestPart("file") MultipartFile file,
             @CookieValue String token

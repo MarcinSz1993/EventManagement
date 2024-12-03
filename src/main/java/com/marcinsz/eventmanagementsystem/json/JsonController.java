@@ -16,15 +16,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
-@RequestMapping("/json")
+@RequestMapping("/api/json")
 @RequiredArgsConstructor
 public class JsonController {
-    private final JsonService jsonService;
+    private final EventJsonProcessor eventJsonProcessor;
     private final ObjectMapper objectMapper;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Resource> downloadUserPersonalJsonFile(@CookieValue String token) throws IOException {
-        String jsonFileContent = jsonService.generateUserPersonalJsonFile(token);
+        String jsonFileContent = eventJsonProcessor.generateUserPersonalJsonFile(token);
         ByteArrayResource resource = new ByteArrayResource(jsonFileContent.getBytes(StandardCharsets.UTF_8));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=events.json")
@@ -33,12 +33,12 @@ public class JsonController {
                 .body(resource);
     }
 
-    @PostMapping(value = "/",consumes = "multipart/form-data")
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<String> uploadEvents(@RequestParam("file") MultipartFile multipartFile,
                                                @CookieValue String token) throws IOException {
         List<CreateEventRequest> createEventRequestList = objectMapper.readValue(multipartFile.getInputStream(),
                 objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, CreateEventRequest.class));
-        return ResponseEntity.ok().body(jsonService.uploadEvents(createEventRequestList, token));
+        return ResponseEntity.ok().body(eventJsonProcessor.uploadEvents(createEventRequestList, token));
     }
 }

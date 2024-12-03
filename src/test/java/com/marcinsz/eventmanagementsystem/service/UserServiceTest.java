@@ -176,38 +176,36 @@ class UserServiceTest {
 
     @Test
     public void getEventsBasedOnUserPreferencesShouldReturnEventsWithMostPopularTargetBasedOnUserPreferences(){
+        User organizer = createTestOrganizer();
         String token = "token";
         User user = createTestUser();
-        Event event1 = createTestEvent(user);
-        Event event2 = createTestEvent(user);
+        Event event1 = createTestEvent(organizer);
+        Event event2 = createTestEvent(organizer);
         event2.setEventName("Test event 2");
 
-        Event event3 = createTestEvent(user);
+        Event event3 = createTestEvent(organizer);
         event3.setEventName("Test event 3");
         event3.setEventTarget(EventTarget.ADULTS_ONLY);
 
-        Event event4 = createTestEvent(user);
+        Event event4 = createTestEvent(organizer);
         event4.setEventName("Test event 4");
         event4.setEventTarget(EventTarget.CHILDREN);
 
-        Event event5 = createTestEvent(user);
+        Event event5 = createTestEvent(organizer);
         event5.setEventName("Test event 5");
 
-        user.setEvents(List.of(event1, event2, event3,event4,event5));
+        user.setEvents(List.of(event1, event2, event3,event4));
         String username = user.getUsername();
 
-        EventTarget userPreference = EventTarget.EVERYBODY; //Because most user's events have target EVERYBODY.
+        EventTarget userPreference = EventTarget.EVERYBODY;
 
         Mockito.when(jwtService.extractUsername(token)).thenReturn(username);
         Mockito.when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        Mockito.when(eventRepository.findAllByEventTarget(userPreference)).thenReturn(List.of(event1,event2,event5));
+        Mockito.when(eventRepository.findAllByEventTarget(userPreference)).thenReturn(List.of(event5));
 
         List<EventDto> actualList = userService.getEventsBasedOnUserPreferences(token);
-        assertEquals(3, actualList.size());
-        assertEquals(EventTarget.EVERYBODY,actualList.get(0).getEventTarget());
-        assertEquals(EventTarget.EVERYBODY,actualList.get(1).getEventTarget());
-        assertEquals(EventTarget.EVERYBODY,actualList.get(2).getEventTarget());
-
+        assertEquals(1, actualList.size());
+        assertEquals(EventTarget.EVERYBODY,actualList.getFirst().getEventTarget());
 
         Mockito.verify(jwtService).extractUsername(token);
         Mockito.verify(userRepository).findByUsername(username);
@@ -245,6 +243,22 @@ class UserServiceTest {
                 .phoneNumber("123456789")
                 .accountNumber("1234567890")
                 .accountStatus("ACTIVE")
+                .build();
+    }
+
+    private User createTestOrganizer(){
+        return User.builder()
+                .firstName("Tom")
+                .lastName("Willson")
+                .email("tom@willson.com")
+                .username("tommy")
+                .password("encodedPassword")
+                .birthDate(LocalDate.of(1990, 4, 19))
+                .role(Role.USER)
+                .phoneNumber("123456788")
+                .accountNumber("1234567899")
+                .accountStatus("ACTIVE")
+                .events(new ArrayList<>())
                 .build();
     }
 

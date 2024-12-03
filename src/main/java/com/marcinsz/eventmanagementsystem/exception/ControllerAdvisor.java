@@ -146,9 +146,19 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.CONFLICT).body("User with a data you provided already exists.");
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<String> userAlreadyExistsExceptionHandler(Exception ex){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(LocationNotFoundException.class)
+    public ResponseEntity<String> locationNotFoundExceptionHandler(Exception ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EventValidateException.class)
+    public ResponseEntity<String> eventCompletedExceptionHandler(Exception ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
 

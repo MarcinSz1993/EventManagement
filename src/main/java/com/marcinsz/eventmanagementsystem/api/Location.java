@@ -10,7 +10,7 @@ public class Location {
         private String country;
         private int lat;
         private int lon;
-        @JsonProperty("tz_id")
+        @JsonProperty("tz_id") //Time zone
         private String tzId;
         @JsonProperty("localtime_epoch")
         private int localtimeEpoch;

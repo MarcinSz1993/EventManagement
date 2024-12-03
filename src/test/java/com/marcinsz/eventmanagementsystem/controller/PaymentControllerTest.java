@@ -3,6 +3,8 @@ package com.marcinsz.eventmanagementsystem.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marcinsz.eventmanagementsystem.exception.TicketAlreadyBoughtException;
 import com.marcinsz.eventmanagementsystem.request.BuyTicketRequest;
+import com.marcinsz.eventmanagementsystem.service.KafkaMessageListener;
+import com.marcinsz.eventmanagementsystem.service.NotificationService;
 import com.marcinsz.eventmanagementsystem.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
+@MockBean(KafkaMessageListener.class)
+@MockBean(NotificationService.class)
 public class PaymentControllerTest {
 
     @Autowired
@@ -44,7 +48,7 @@ public class PaymentControllerTest {
         Mockito.when(paymentService.buyTicket(buyTicketRequest,"passwordToken"))
                 .thenThrow(new TicketAlreadyBoughtException("Ticket already bought."));
 
-        mockMvc.perform(put("/payments/")
+        mockMvc.perform(put("/api/payments/")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer passwordToken")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(buyTicketRequest)))
@@ -58,7 +62,7 @@ public class PaymentControllerTest {
         Mockito.when(paymentService.buyTicket(buyTicketRequest, "passwordToken"))
                 .thenReturn("Ticket bought successfully");
 
-        mockMvc.perform(put("/payments/")
+        mockMvc.perform(put("/api/payments/")
                         .header("Authorization", "Bearer passwordToken")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(buyTicketRequest)))

@@ -80,7 +80,7 @@ public class UserIntegrationTest {
         HashMap<String,String> expectedError = new HashMap<>();
         expectedError.put("username","length must be between 5 and 10");
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authenticationRequest)))
                 .andExpect(status().isBadRequest())
@@ -99,7 +99,7 @@ public class UserIntegrationTest {
         HashMap<String,String> expectedError = new HashMap<>();
         expectedError.put("username","length must be between 5 and 10");
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authenticationRequest)))
                 .andExpect(status().isBadRequest())
@@ -115,7 +115,7 @@ public class UserIntegrationTest {
         AuthenticationRequest authenticationRequest = createTestAuthenticationRequest();
         authenticationRequest.setPassword("wrongPassword");
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authenticationRequest)))
                 .andExpect(status().isForbidden())
@@ -131,7 +131,7 @@ public class UserIntegrationTest {
         AuthenticationRequest authenticationRequest = createTestAuthenticationRequest();
         authenticationRequest.setUsername("wrongInput");
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/api/users/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(authenticationRequest)))
                 .andExpect(status().isForbidden())
@@ -146,7 +146,7 @@ public class UserIntegrationTest {
         userRepository.save(user);
         AuthenticationRequest authenticationRequest = createTestAuthenticationRequest();
 
-        MvcResult result = mockMvc.perform(post("/users/login")
+        MvcResult result = mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authenticationRequest)))
                 .andExpect(status().isOk())
@@ -185,7 +185,7 @@ public class UserIntegrationTest {
         eventRepository.save(event2);
 
         String token = jwtService.generateToken(user);
-        MvcResult result = mockMvc.perform(get("/users/preferences")
+        MvcResult result = mockMvc.perform(get("/api/users/preferences")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -220,7 +220,7 @@ public class UserIntegrationTest {
         eventRepository.saveAll(List.of(event1, event2, event3, event4,event5));
 
         String token = jwtService.generateToken(user);
-        MvcResult result = mockMvc.perform(get("/users/preferences")
+        MvcResult result = mockMvc.perform(get("/api/users/preferences")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -276,7 +276,7 @@ public class UserIntegrationTest {
 
         String token = jwtService.generateToken(user);
 
-        MvcResult result = mockMvc.perform(get("/users/preferences")
+        MvcResult result = mockMvc.perform(get("/api/users/preferences")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -324,7 +324,7 @@ public class UserIntegrationTest {
 
 
         String token = jwtService.generateToken(user);
-        MvcResult result = mockMvc.perform(get("/users/preferences")
+        MvcResult result = mockMvc.perform(get("/api/users/preferences")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -362,7 +362,7 @@ public class UserIntegrationTest {
         String stringExpectedCreateUserResponse = objectMapper.writeValueAsString(expectedCreateUserResponse);
         JsonNode expectedJsonNode = objectMapper.readTree(stringExpectedCreateUserResponse);
 
-        MvcResult result = mockMvc.perform(post("/users")
+        MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequestEdgeCase)))
                 .andExpect(status().isOk())
@@ -382,7 +382,7 @@ public class UserIntegrationTest {
         HashMap<String, String> expectedError = new HashMap<>();
         expectedError.put("email", "Acceptable pattern is: example@example.com");
 
-        MvcResult result = mockMvc.perform(post("/users")
+        MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
                 .andReturn();
@@ -396,12 +396,12 @@ public class UserIntegrationTest {
     @Test
     void createUserShouldHandleCaseWhenUserTriesToCreateTheAccountWithAlreadyExistingEmail() throws Exception {
         CreateUserRequest createUserRequest = createUserRequest();
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
                 .andReturn();
 
-        MvcResult result = mockMvc.perform(post("/users")
+        MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
                 .andExpect(status().isConflict())
@@ -420,7 +420,7 @@ public class UserIntegrationTest {
         HashMap<String, String> expectedErrors = new HashMap<>();
         expectedErrors.put("email", "Email is required");
         expectedErrors.put("accountNumber", "Account number is required");
-        MvcResult result = mockMvc.perform(post("/users")
+        MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
                 .andExpect(status().isBadRequest())
@@ -437,7 +437,7 @@ public class UserIntegrationTest {
         createUserRequest.setFirstName(null);
         HashMap<String, String> expectedErrors = new HashMap<>();
         expectedErrors.put("firstName", "First name is required");
-        MvcResult result = mockMvc.perform(post("/users")
+        MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
                 .andExpect(status().isBadRequest())
@@ -449,7 +449,7 @@ public class UserIntegrationTest {
 
     @Test
     void createUserShouldThrowNullPointerExceptionWhenInputIsNull() throws Exception {
-        MvcResult result = mockMvc.perform(post("/users")
+        MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(null)))
                 .andExpect(status().is4xxClientError())
@@ -464,7 +464,7 @@ public class UserIntegrationTest {
     void shouldCreateUserAndAddTokenToCookieSuccessfully() throws Exception {
         CreateUserRequest createUserRequest = createUserRequest();
 
-        MvcResult result = mockMvc.perform(post("/users")
+        MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
                 .andExpect(status().isOk())

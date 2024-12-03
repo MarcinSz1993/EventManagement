@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/api/events")
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;

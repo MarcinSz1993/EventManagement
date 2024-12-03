@@ -67,6 +67,7 @@ class WeatherServiceTest {
     public void weatherFromApiShouldReturnForecastCorrectly() throws IOException {
         User user = createTestUser();
         Event event = createTestEvent(user);
+        event.setEventDate(LocalDate.now().plusDays(1));
         Long eventId = event.getId();
         String locationWithoutPolishCharacters = "locationWithoutPolishCharacters";
 

@@ -6,5 +6,5 @@ import java.util.List;
 
 @Data
 public class Forecast {
-    private List<Forecastday> forecastday;
+    private List<Forecastday> forecastDay;
 }

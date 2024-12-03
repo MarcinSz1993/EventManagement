@@ -27,7 +27,7 @@ public class Current {
     private int pressureMb;
     @JsonProperty("pressure_in")
     private int pressureIn;
-    @JsonProperty("precip_mm")
+    @JsonProperty("precip_mm") //Precipitation amount in millimeters
     private int precipMm;
     @JsonProperty("precip_in")
     private int precipIn;

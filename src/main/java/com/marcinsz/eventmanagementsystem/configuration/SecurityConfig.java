@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,19 +34,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class SecurityConfig {
     private final UserDetailsImpl userDetailsImpl;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/users").permitAll();
-                    registry.requestMatchers("/csv/uploadUsers").permitAll();
-                    registry.requestMatchers("payments/test").permitAll();
+                    registry.requestMatchers("/api/**").permitAll();
                     registry.requestMatchers("/users/preferences").hasRole("USER");
-                    registry.requestMatchers("/users/login").permitAll();
-                    registry.requestMatchers("/weather/").permitAll();
+                    registry.requestMatchers("/events").hasAnyRole("USER", "ADMIN");
+                    registry.requestMatchers("/payments/").hasAnyRole("USER", "ADMIN");
+
                     registry.requestMatchers("/swagger-ui/**").permitAll();
                     registry.requestMatchers("/v3/api-docs/**").permitAll();
-                    registry.requestMatchers("/events").hasAnyRole("USER","ADMIN");
-                    registry.requestMatchers("/payments/").hasAnyRole("USER","ADMIN");
                     registry.requestMatchers("/h2-console/**").permitAll();
                     registry.anyRequest().authenticated();
                 })
@@ -57,19 +57,38 @@ public class SecurityConfig {
                 .build();
     }
 
-        @Bean
-        public PasswordEncoder passwordEncoder(){
-            return new BCryptPasswordEncoder();
-        }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-        @Bean
-        public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
-        }
+    }
 
-        @Bean
-        public WebClient webClient(){
-        return WebClient.create();
-        }
+    @Bean
+    public WebClient bankServiceLoginWebClient(BankServiceConfig bankServiceConfig) {
+        return WebClient.builder()
+                .baseUrl(bankServiceConfig.getUrl() + bankServiceConfig.getUserLogin())
+                .build();
+    }
 
+    @Bean
+    public WebClient bankServicePaymentWebClient(BankServiceConfig bankServiceConfig) {
+        return WebClient.builder()
+                .baseUrl(bankServiceConfig.getUrl() + bankServiceConfig.getTransaction())
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .build();
+    }
+
+    @Bean
+    public WebClient weatherWebClient(WeatherApiConfig weatherApiConfig) {
+        return WebClient.builder()
+                .baseUrl(weatherApiConfig.getBaseUrl())
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
 }

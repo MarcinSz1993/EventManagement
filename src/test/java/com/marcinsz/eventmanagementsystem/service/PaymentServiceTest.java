@@ -66,20 +66,21 @@ public class PaymentServiceTest {
         mockWebServer.start();
 
         String baseUrl = mockWebServer.url("/").toString();
-        Mockito.when(bankServiceConfig.getUrl()).thenReturn(baseUrl);
-        Mockito.when(bankServiceConfig.getTransaction()).thenReturn("transactions/");
-        Mockito.when(bankServiceConfig.getUserLogin()).thenReturn("clients/login");
 
-        WebClient webClient = WebClient.builder()
-                .baseUrl(baseUrl)
+        WebClient bankServicePaymentWebClient = WebClient.builder()
+                .baseUrl(baseUrl + "api/transactions/")
                 .build();
 
-        paymentService = new PaymentService(webClient,
+        WebClient bankServiceLoginWebClient = WebClient.builder()
+                .baseUrl(baseUrl + "/api/clients/login")
+                .build();
+
+        paymentService = new PaymentService(bankServicePaymentWebClient,
+                bankServiceLoginWebClient,
                 jwtService,
                 userRepository,
                 eventRepository,
                 ticketRepository,
-                bankServiceConfig,
                 kafkaMessageProducer
         );
     }
@@ -180,7 +181,7 @@ public class PaymentServiceTest {
 
         RecordedRequest loginRequest = mockWebServer.takeRequest();
         Assertions.assertEquals("POST", loginRequest.getMethod());
-        Assertions.assertEquals("/clients/login", loginRequest.getPath());
+        Assertions.assertEquals("/api/clients/login", loginRequest.getPath());
 
         Mockito.verify(jwtService, Mockito.times(1)).extractUsername(token);
         Mockito.verify(userRepository, Mockito.times(1)).findByUsername(username);
@@ -293,11 +294,11 @@ public class PaymentServiceTest {
 
         RecordedRequest loginRequestResult = mockWebServer.takeRequest();
         Assertions.assertEquals("POST", loginRequestResult.getMethod());
-        Assertions.assertEquals("/clients/login", loginRequestResult.getPath());
+        Assertions.assertEquals("/api/clients/login", loginRequestResult.getPath());
 
         RecordedRequest executeTransactionRequestResult = mockWebServer.takeRequest();
         Assertions.assertEquals("PUT", executeTransactionRequestResult.getMethod());
-        Assertions.assertEquals("/transactions/", executeTransactionRequestResult.getPath());
+        Assertions.assertEquals("/api/transactions/", executeTransactionRequestResult.getPath());
 
         Assertions.assertEquals(expectedCommunicate, result);
 

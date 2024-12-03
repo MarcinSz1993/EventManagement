@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -27,9 +26,6 @@ public class OpenApiConfig {
                         .description("OpenApi documentation for EventManagementSystem")
                         .title("OpenApi specification - MarcinSz")
                         .version("1.0")
-                        .license(new License()
-                                .name("License name")
-                                .url("https://example-url.com"))
                         .termsOfService("Terms of service"))
                 .servers(List.of(new Server()
                         .description("Local ENV")

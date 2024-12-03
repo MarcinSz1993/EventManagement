@@ -34,7 +34,7 @@ import java.util.List;
 @Slf4j
 @Validated
 @RequiredArgsConstructor
-public class JsonService {
+public class EventJsonProcessor {
     private final ObjectMapper objectMapper;
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -86,7 +86,7 @@ public class JsonService {
     }
 
     private Schema loadSchemaStream() throws IOException {
-        try (InputStream schemaStream = JsonService.class.getResourceAsStream("/jsonschema/schema-createeventrequest.json")) {
+        try (InputStream schemaStream = EventJsonProcessor.class.getResourceAsStream("/jsonschema/schema-createeventrequest.json")) {
             if (schemaStream == null) {
                 throw new JsonParseException("schema-createeventrequest.json not found");
             }

@@ -9,7 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/carts")
+@RequestMapping("/api/carts")
 @RequiredArgsConstructor
 public class CartController {
     private final CartService cartService;
