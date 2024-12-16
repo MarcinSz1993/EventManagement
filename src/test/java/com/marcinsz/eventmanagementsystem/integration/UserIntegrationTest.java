@@ -32,10 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -417,17 +414,17 @@ public class UserIntegrationTest {
         createUserRequest.setEmail(null);
         createUserRequest.setAccountNumber(null);
 
-        HashMap<String, String> expectedErrors = new HashMap<>();
+        LinkedHashMap<String, String> expectedErrors = new LinkedHashMap<>();
         expectedErrors.put("email", "Email is required");
         expectedErrors.put("accountNumber", "Account number is required");
-        MvcResult result = mockMvc.perform(post("/api/users")
+
+        mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().json(objectMapper.writeValueAsString(expectedErrors)))
                 .andReturn();
 
-        assertEquals(objectMapper.writeValueAsString(expectedErrors), result.getResponse().getContentAsString());
-        assertEquals(400, result.getResponse().getStatus());
         assertTrue(userRepository.findAll().isEmpty());
     }
 

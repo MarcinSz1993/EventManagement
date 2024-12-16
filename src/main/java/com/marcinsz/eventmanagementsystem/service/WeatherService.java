@@ -8,6 +8,7 @@ import com.marcinsz.eventmanagementsystem.mapper.WeatherMapper;
 import com.marcinsz.eventmanagementsystem.model.Event;
 import com.marcinsz.eventmanagementsystem.model.EventStatus;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 
+@Slf4j
 @Service
 public class
 WeatherService {
@@ -52,12 +54,16 @@ WeatherService {
                         clientResponse -> clientResponse.bodyToMono(String.class)
                         .map((Function<String, Throwable>) responseBody -> {
                             if (responseBody.contains("1006")) {
-                                throw new LocationNotFoundException("Location not found.");
+                                log.error(responseBody);
+                                throw new LocationNotFoundException("A location of this event is not handled.");
+                            } else if (responseBody.contains("1003")) {
+                                log.error(responseBody);
+                                throw new IllegalArgumentException("It looks like parameter q is missing.");
                             }
                             return new RuntimeException("Other error.");
                         }))
                 .bodyToMono(WeatherFromApi.class)
-                .map(WeatherMapper::convertWeatherFromApiToWeatherDto)
+                .map(WeatherMapper::mapToWeatherDto)
                 .block();
     }
 

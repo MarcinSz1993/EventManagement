@@ -6,6 +6,8 @@ import com.marcinsz.eventmanagementsystem.configuration.WeatherApiConfig;
 import com.marcinsz.eventmanagementsystem.dto.WeatherDto;
 import com.marcinsz.eventmanagementsystem.exception.EventForecastTooEarlyException;
 import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
+import com.marcinsz.eventmanagementsystem.exception.EventValidateException;
+import com.marcinsz.eventmanagementsystem.exception.LocationNotFoundException;
 import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import okhttp3.mockwebserver.MockResponse;
@@ -43,7 +45,6 @@ class WeatherServiceTest {
 
     @InjectMocks
     WeatherService weatherService;
-
 
 
     @BeforeEach
@@ -85,12 +86,77 @@ class WeatherServiceTest {
         WeatherDto actualWeatherDto = weatherService.weatherFromApi(eventId);
 
         assertEquals(18, actualWeatherDto.getMaxTemperature());
-        assertEquals("2024-10-19",actualWeatherDto.getDate());
-        assertEquals("London",actualWeatherDto.getCityName());
-        assertEquals("UK",actualWeatherDto.getCountry());
-        assertEquals("07:45 AM",actualWeatherDto.getSunrise());
-        assertEquals("06:00 PM",actualWeatherDto.getSunset());
+        assertEquals("2024-10-19", actualWeatherDto.getDate());
+        assertEquals("London", actualWeatherDto.getCityName());
+        assertEquals("UK", actualWeatherDto.getCountry());
+        assertEquals("07:45 AM", actualWeatherDto.getSunrise());
+        assertEquals("06:00 PM", actualWeatherDto.getSunset());
     }
+
+    @Test
+    public void weatherFromApiShouldThrowLocationNotFoundExceptionWhenTheLocationIsNotRecognizedByWeatherApiService() throws IOException {
+        String locationNotHandledByWeatherApiService = "locationNotHandledByWeatherApiService";
+        User user = createTestUser();
+        Event event = createTestEvent(user);
+        event.setLocation(locationNotHandledByWeatherApiService);
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(polishCharactersMapper.removePolishCharacters(event.getLocation())).thenReturn(locationNotHandledByWeatherApiService);
+
+        Object errorResponseFromApi = objectMapper.readValue(new File("src/test/weatherApiTest1006ErrorResponse.json"), Object.class);
+        String expectedResponse = objectMapper.writeValueAsString(errorResponseFromApi);
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(400)
+                .setBody(expectedResponse));
+        LocationNotFoundException locationNotFoundException = assertThrows(LocationNotFoundException.class, () -> weatherService.weatherFromApi(event.getId()));
+        assertEquals("A location of this event is not handled.",locationNotFoundException.getMessage());
+    }
+
+
+    @Test
+    public void weatherFromApiShouldIllegalArgumentExceptionWhenLocationParameterIsMissing() throws IOException {
+        User user = createTestUser();
+        Event event = createTestEvent(user);
+        event.setLocation(null);
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(polishCharactersMapper.removePolishCharacters(event.getLocation())).thenReturn(null);
+
+        Object errorResponseFromApi = objectMapper.readValue(new File("src/test/weatherApiTest1003ErrorResponse.json"), Object.class);
+        String expectedResponse = objectMapper.writeValueAsString(errorResponseFromApi);
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(400)
+                .setBody(expectedResponse));
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> weatherService.weatherFromApi(event.getId()));
+        assertEquals("It looks like parameter q is missing.",illegalArgumentException.getMessage());
+    }
+
+    @Test
+    public void weatherFromApiShouldThrowEventValidateExceptionWithSpecifiedCommunicateWhenUserTriesToCheckForecastForEndedEvent(){
+        Long eventId = 1L;
+        User user = createTestUser();
+        Event event = createTestEvent(user);
+        event.setEventStatus(EventStatus.COMPLETED);
+
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        EventValidateException eventValidateException = assertThrows(EventValidateException.class, () -> weatherService.weatherFromApi(eventId));
+        assertEquals("You can't check a forecast for a day of this event because the event has ended.",eventValidateException.getMessage());
+    }
+
+    @Test
+    public void weatherFromApiShouldThrowEventValidateExceptionWithSpecifiedCommunicateWhenUserTriesToCheckForecastForDayBeforeTheEventDay(){
+        Long eventId = 1L;
+        User user = createTestUser();
+        Event event = createTestEvent(user);
+        event.setEventDate(LocalDate.now().minusDays(1));
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+
+        EventValidateException eventValidateException = assertThrows(EventValidateException.class, () -> weatherService.weatherFromApi(eventId));
+        assertEquals("You can't check the forecast for a day before the event.",eventValidateException.getMessage());
+    }
+
 
     @Test
     public void weatherFromApiShouldThrowEventForecastTooEarlyExceptionWhenEventIsMoreThan14DaysInTheFuture(){
@@ -126,7 +192,7 @@ class WeatherServiceTest {
                 .eventDescription("Example description")
                 .location("Lublin")
                 .maxAttendees(10)
-                .eventDate(LocalDate.of(2024, 6, 20))
+                .eventDate(LocalDate.of(2024, 12, 16))
                 .eventStatus(EventStatus.ACTIVE)
                 .ticketPrice(100.0)
                 .eventTarget(EventTarget.EVERYBODY)

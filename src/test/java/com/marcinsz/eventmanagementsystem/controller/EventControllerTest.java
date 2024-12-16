@@ -28,8 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EventControllerTest {
 
@@ -260,12 +259,7 @@ class EventControllerTest {
         UpdateEventRequest updateEventRequest = createTestUpdateEventRequest();
 
         Mockito.when(eventService.updateEvent(updateEventRequest, eventId, token)).thenThrow(EventNotFoundException.class);
-        ResponseEntity<EventDto> actualEventDto = eventController.updateEvent(updateEventRequest, eventId, token);
-
-        assertNotNull(actualEventDto);
-        Assertions.assertThat(actualEventDto.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(404));
-        Assertions.assertThat(actualEventDto.getBody()).isNull();
-
+        assertThrows(EventNotFoundException.class,() -> eventController.updateEvent(updateEventRequest, eventId, token));
         Mockito.verify(jwtService, Mockito.never()).extractUsername(token);
     }
 
@@ -298,7 +292,7 @@ class EventControllerTest {
 
         Assertions.assertThat(eventDtoResponseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(202));
         assertEquals(expectedEventDto, eventDtoResponseEntity.getBody());
-        assertEquals(expectedEventDto.getEventDescription(), Objects.requireNonNull(eventDtoResponseEntity.getBody()).getEventDescription());
+        assertEquals(expectedEventDto.getEventDescription(), Objects.requireNonNull(Objects.requireNonNull(eventDtoResponseEntity.getBody()).getEventDescription()));
         Mockito.verify(eventService, Mockito.times(1)).updateEvent(updateEventRequest, eventId, token);
     }
 

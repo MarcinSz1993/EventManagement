@@ -1,23 +1,31 @@
 package com.marcinsz.eventmanagementsystem.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 @ControllerAdvice
 public class ControllerAdvisor {
+
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(UserNotFoundException.class)
     public String UserNotFoundHandler(UserNotFoundException ex){
         return ex.getMessage();
     }
+
     @ResponseBody
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(BadCredentialsException.class)
@@ -36,6 +44,7 @@ public class ControllerAdvisor {
     public String EventExceptionHandler(EventForecastTooEarlyException ex){
         return ex.getMessage();
     }
+
     @ResponseBody
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(NotYourEventException.class)
@@ -46,7 +55,7 @@ public class ControllerAdvisor {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException ex){
-        HashMap<String,String> errors = new HashMap<>();
+        LinkedHashMap<String,String> errors = new LinkedHashMap<>();
         ex.getBindingResult().getAllErrors()
                 .forEach(error -> {
                     String field = ((FieldError) error).getField();
@@ -62,6 +71,7 @@ public class ControllerAdvisor {
     public String wrongFileExceptionHandler(Exception ex){
         return ex.getMessage();
     }
+
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     @ExceptionHandler(UserNotParticipantException.class)
@@ -109,12 +119,14 @@ public class ControllerAdvisor {
     public String transactionProcessServerHandler(Exception ex){
         return ex.getMessage();
     }
+
     @ResponseBody
     @ResponseStatus(HttpStatus.PROCESSING)
     @ExceptionHandler(TransactionProcessClientException.class)
     public String transactionProcessClientHandler(Exception ex){
         return ex.getMessage();
     }
+
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(EmptyCartException.class)
@@ -159,6 +171,21 @@ public class ControllerAdvisor {
     @ExceptionHandler(EventValidateException.class)
     public ResponseEntity<String> eventCompletedExceptionHandler(Exception ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<String> missingRequestCookieExceptionHandler(){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing required cookie.");
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<String>expiredJwtExceptionHandler(){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Expired JWT token. Please log in once again.");
+    }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<String>malformedJwtExceptionHandler(Exception ex){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token." + ex.getMessage());
     }
 }
 

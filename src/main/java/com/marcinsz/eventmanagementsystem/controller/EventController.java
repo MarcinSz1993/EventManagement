@@ -1,7 +1,6 @@
 package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
-import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
@@ -40,6 +39,9 @@ public class EventController {
     public ResponseEntity<EventDto> createEvent(
                                 @RequestBody @Valid CreateEventRequest createEventRequest,
                                 @CookieValue String token) {
+        if (token.isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         String username = jwtService.extractUsername(token);
         User user = eventService.findByUsername(username);
         EventDto event = eventService.createEvent(createEventRequest, user);
@@ -52,13 +54,8 @@ public class EventController {
                                                 @RequestBody @Valid UpdateEventRequest updateEventRequest,
                                                 @RequestParam Long eventId,
                                                 @CookieValue String token) {
-        try {
             EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, token);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
-        } catch (EventNotFoundException e) {
-            log.info("Event with id {} not found", eventId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
     }
 
     @GetMapping

@@ -39,7 +39,7 @@
     "gust_kph": 19
   },
   "forecast": {
-    "forecastDay": [
+    "forecastday": [
       {
         "date": "2024-10-19",
         "date_epoch": 1637068800,

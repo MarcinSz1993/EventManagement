@@ -47,7 +47,7 @@ class UserMapperTest {
         Assertions.assertEquals(user.getAccountStatus(),userDto.getAccountStatus());
     }
     @Test
-    public void mapUserToUserDtoShouldThrowNullPointerExceptionWhenInputIsNull(){
+    public void mapUserToUserDtoShouldThrowIllegalArgumentExceptionWhenInputIsNull(){
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> UserMapper.convertUserToUserDto(null));
         assertEquals("User should not be null.", exception.getMessage());
     }
@@ -71,7 +71,7 @@ class UserMapperTest {
     }
 
     @Test
-    public void mapCreateUserRequestToUserShouldThrowNullPointerExceptionWhenInputIsNull(){
+    public void mapCreateUserRequestToUserShouldThrowIllegalArgumentExceptionWhenInputIsNull(){
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> UserMapper.convertCreateUserRequestToUser(null));
         assertEquals("CreateUserRequest should not be null.",exception.getMessage());
     }
@@ -104,7 +104,7 @@ class UserMapperTest {
     }
 
     @Test
-    public void mapUserToOrganiserDtoShouldThrowNullPointerExceptionWhenInputIsNull(){
+    public void mapUserToOrganiserDtoShouldThrowIllegalArgumentExceptionWhenInputIsNull(){
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> UserMapper.convertUserToUserDto(null));
         assertEquals("User should not be null.", exception.getMessage());
     }

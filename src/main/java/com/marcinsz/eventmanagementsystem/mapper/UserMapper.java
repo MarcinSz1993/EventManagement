@@ -69,7 +69,7 @@ public class UserMapper {
                 .toList();
     }
 
-    public static User convertUserCsvRepresentationToUser(UserCsvRepresentation userCsvRepresentation){
+    public static User mapToUser(UserCsvRepresentation userCsvRepresentation){
         return User.builder()
                 .firstName(userCsvRepresentation.getFirstname())
                 .lastName(userCsvRepresentation.getLastname())

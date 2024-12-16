@@ -71,7 +71,7 @@ public class EventMapper {
                 .map(EventMapper::convertEventToEventDto).collect(Collectors.toList());
     }
 
-    public static Event convertEventCsvRepresentationToEvent(EventCsvRepresentation eventCsvRepresentation){
+    public static Event mapToEvent(EventCsvRepresentation eventCsvRepresentation){
         if(eventCsvRepresentation == null){
             throw new WrongFileException();
         }

@@ -582,7 +582,7 @@ class EventServiceTest {
     }
 
     @Test
-    public void updateEventShouldThrowNotYourEventExceptionWhenYouOrganiserUsernameAndUsernameFromTokenNotMatch(){
+    public void updateEventShouldThrowNotYourEventExceptionWhenOrganiserUsernameAndUsernameFromTokenNotMatch(){
         Long eventId = 1L;
         User user = createTestUser();
         Event event = createTestEvent(user);

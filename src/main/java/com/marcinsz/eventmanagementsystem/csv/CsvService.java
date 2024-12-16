@@ -40,7 +40,7 @@ public class CsvService {
             Set<UserCsvRepresentation> userCsvRepresentations = userCsvHandler.parse(reader, file);
             Set<User> users = userCsvRepresentations.stream()
                     .map(userCsvRepresentation -> {
-                        User user = UserMapper.convertUserCsvRepresentationToUser(userCsvRepresentation);
+                        User user = UserMapper.mapToUser(userCsvRepresentation);
                         user.setPassword(passwordEncoder.encode(user.getPassword()));
                         return user;
                     })
@@ -56,18 +56,18 @@ public class CsvService {
         try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             Set<EventCsvRepresentation> eventCsvRepresentations = eventCsvHandler.parse(reader, file);
             Set<Event> events = eventCsvRepresentations.stream().map(eventCsvRepresentation -> {
-                        Event event = EventMapper.convertEventCsvRepresentationToEvent(eventCsvRepresentation);
+                        Event event = EventMapper.mapToEvent(eventCsvRepresentation);
                         event.setOrganizer(user);
                         return event;
                     })
                     .collect(Collectors.toSet());
             eventRepository.saveAll(events);
-            sendMessageToKafka(events);
+            sendEventToKafka(events);
             return "Added " + events.size() + " events";
         }
     }
 
-    private void sendMessageToKafka(Set<Event> events) {
+    private void sendEventToKafka(Set<Event> events) {
         events.stream()
                 .map(EventMapper::convertEventToEventDto)
                 .forEach(kafkaMessageProducer::sendCreatedEventMessageToAllEventsTopic);
