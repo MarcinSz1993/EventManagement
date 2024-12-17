@@ -4,6 +4,7 @@ import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.model.AuthenticationResponse;
 import com.marcinsz.eventmanagementsystem.model.CreateUserResponse;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
+import com.marcinsz.eventmanagementsystem.request.ChangePasswordRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import com.marcinsz.eventmanagementsystem.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -11,9 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @Validated
@@ -47,6 +50,12 @@ public class UserController {
         String token = authorizationHeader.substring("Bearer ".length());
         System.out.println(token);
         return userService.getEventsBasedOnUserPreferences(token);
+    }
+
+    @PatchMapping("/changePassword")
+    public ResponseEntity<String> changePassword(ChangePasswordRequest changePasswordRequest, Principal connectedUser){
+        userService.changePassword(changePasswordRequest,connectedUser);
+        return ResponseEntity.ok("Password has been changed successfully");
     }
 
     private void addTokenToCookie(String token, HttpServletResponse servletResponse){

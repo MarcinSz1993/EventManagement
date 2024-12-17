@@ -12,9 +12,11 @@ import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
+import com.marcinsz.eventmanagementsystem.request.ChangePasswordRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -22,9 +24,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -91,6 +95,28 @@ public class UserService {
                     .map(EventMapper::convertEventToEventDto)
                     .toList();
         }
+    }
+
+    public void changePassword(ChangePasswordRequest changePasswordRequest, Principal connectedUser) {
+
+        log.info("ConnectedUser class: {}", connectedUser.getClass());
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = (UsernamePasswordAuthenticationToken) connectedUser;
+
+        log.info("UsernamePasswordAuthenticationToken getPrincipal class: {}", usernamePasswordAuthenticationToken.getPrincipal().getClass());
+
+        User user = (User) usernamePasswordAuthenticationToken.getPrincipal();
+
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Old password is incorrect!");
+        }
+
+        if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())){
+            throw new BadCredentialsException("Passwords are not the same!");
+        }
+
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+
+        userRepository.save(user);
     }
 
     private EventTarget getPreferedEventTarget(User user) {
