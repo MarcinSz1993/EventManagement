@@ -27,6 +27,15 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final TemplateEngine templateEngine;
 
+    public void sendResetPasswordTokenToUser(String email, String token) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+        helper.setTo(email);
+        helper.setSubject("Reset Password Token");
+        helper.setText(token, true);
+        mailSender.send(mimeMessage);
+    }
+
     @Async
     public void sendNotification(EventDto eventDto) throws MessagingException {
         MimeMessage message = createNewMessage(eventDto);

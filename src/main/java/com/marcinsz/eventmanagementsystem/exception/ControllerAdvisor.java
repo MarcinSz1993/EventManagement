@@ -187,6 +187,11 @@ public class ControllerAdvisor {
     public ResponseEntity<String>malformedJwtExceptionHandler(Exception ex){
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token." + ex.getMessage());
     }
+
+    @ExceptionHandler(TokenException.class)
+    public ResponseEntity<String>tokenExceptionHandler(Exception ex){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
 }
 
 
