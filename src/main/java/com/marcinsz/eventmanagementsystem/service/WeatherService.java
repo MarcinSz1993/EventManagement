@@ -58,7 +58,7 @@ WeatherService {
                                 throw new LocationNotFoundException("A location of this event is not handled.");
                             } else if (responseBody.contains("1003")) {
                                 log.error(responseBody);
-                                throw new IllegalArgumentException("It looks like parameter q is missing.");
+                                throw new EventValidateException("It looks like parameter q is missing.");
                             }
                             return new RuntimeException("Other error.");
                         }))

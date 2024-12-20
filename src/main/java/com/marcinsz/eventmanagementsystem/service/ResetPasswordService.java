@@ -22,16 +22,15 @@ import java.util.UUID;
 public class ResetPasswordService {
 
     private final ResetPasswordRepository resetPasswordRepository;
-
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final NotificationService notificationService;
 
     @Transactional
     public void resetPasswordRequest(ResetPasswordRequest resetPasswordRequest) throws MessagingException {
-
+        if (resetPasswordRequest == null){
+            throw new IllegalArgumentException("resetPasswordRequest cannot be null");
+        }
         User user = userRepository.findByEmail(resetPasswordRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(resetPasswordRequest.getEmail()));
 
         resetPasswordRepository.findByUser(user).ifPresent(resetPasswordToken -> {
@@ -39,7 +38,7 @@ public class ResetPasswordService {
              resetPasswordRepository.flush();
          });
 
-        ResetPasswordToken passwordResetToken = createPasswordResetToken(resetPasswordRequest.getEmail());
+        ResetPasswordToken passwordResetToken = createPasswordResetToken(user);
         resetPasswordRepository.save(passwordResetToken);
 
         sendEmailToUser(resetPasswordRequest.getEmail(), passwordResetToken.getToken());
@@ -61,9 +60,7 @@ public class ResetPasswordService {
         if (!newPassword.equals(confirmNewPassword)){
             throw new BadCredentialsException("Passwords are not the same!");
         }
-        if (!resetPasswordToken.getToken().equals(token)) {
-            throw new TokenException("Invalid token");
-        }
+
         if (resetPasswordToken.getExpireTime().isBefore(LocalDateTime.now())){
             throw new TokenException("Token has expired.");
         }
@@ -73,10 +70,8 @@ public class ResetPasswordService {
         notificationService.sendResetPasswordTokenToUser(email,token);
     }
 
-    private ResetPasswordToken createPasswordResetToken(String email){
-        User user = userRepository.findByEmail(email).orElseThrow(() -> UserNotFoundException.forEmail(email));
+    protected ResetPasswordToken createPasswordResetToken(User user){
         String token = UUID.randomUUID().toString();
-
         return ResetPasswordToken.builder()
                 .token(token)
                 .expireTime(LocalDateTime.now().plusMinutes(10))

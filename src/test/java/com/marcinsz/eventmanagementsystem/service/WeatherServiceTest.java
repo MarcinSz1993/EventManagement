@@ -114,7 +114,7 @@ class WeatherServiceTest {
 
 
     @Test
-    public void weatherFromApiShouldIllegalArgumentExceptionWhenLocationParameterIsMissing() throws IOException {
+    public void weatherFromApiShouldIEventValidateExceptionWhenLocationParameterIsMissing() throws IOException {
         User user = createTestUser();
         Event event = createTestEvent(user);
         event.setLocation(null);
@@ -127,8 +127,8 @@ class WeatherServiceTest {
         mockWebServer.enqueue(new MockResponse()
                 .setResponseCode(400)
                 .setBody(expectedResponse));
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> weatherService.weatherFromApi(event.getId()));
-        assertEquals("It looks like parameter q is missing.",illegalArgumentException.getMessage());
+        EventValidateException eventValidateException = assertThrows(EventValidateException.class, () -> weatherService.weatherFromApi(event.getId()));
+        assertEquals("It looks like parameter q is missing.",eventValidateException.getMessage());
     }
 
     @Test
@@ -192,7 +192,7 @@ class WeatherServiceTest {
                 .eventDescription("Example description")
                 .location("Lublin")
                 .maxAttendees(10)
-                .eventDate(LocalDate.of(2024, 12, 16))
+                .eventDate(LocalDate.of(2024, 12, 31))
                 .eventStatus(EventStatus.ACTIVE)
                 .ticketPrice(100.0)
                 .eventTarget(EventTarget.EVERYBODY)
