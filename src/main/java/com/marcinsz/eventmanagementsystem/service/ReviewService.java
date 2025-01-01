@@ -25,6 +25,9 @@ public class ReviewService {
     private final EventRepository eventRepository;
     private final JwtService jwtService;
 
+    // todo -- zaimplementować metodę, która będzie wymagała zaimplementowania
+    // todo -- paginacji
+
     @Transactional
     public ReviewDto writeReview(WriteReviewRequest writeReviewRequest,String token){
         String username = jwtService.extractUsername(token);

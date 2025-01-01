@@ -6,10 +6,7 @@ import com.marcinsz.eventmanagementsystem.exception.NotYourEventException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
-import com.marcinsz.eventmanagementsystem.model.Event;
-import com.marcinsz.eventmanagementsystem.model.EventStatus;
-import com.marcinsz.eventmanagementsystem.model.EventTarget;
-import com.marcinsz.eventmanagementsystem.model.User;
+import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
@@ -20,6 +17,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,12 @@ public class EventService {
     private final UserRepository userRepository;
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
+
+
+    //todo wdrożyć mechanizm do automatycznego śledzenia utworzonych eventów i użytkowników
+    //todo za pomocą @EntityListeners. (@CreatedBy, @ModifiedBy)
+
+    //todo utworzyć beana CorsFilter, aby umożliwić frontendowi dostęp do endpointów
 
     @CacheEvict(cacheNames = "events", allEntries = true)
     @Transactional
@@ -104,6 +111,24 @@ public class EventService {
         List<Event> allByOrganizer = eventRepository.findAllByOrganizer(user);
         return EventMapper.convertListEventToListEventDto(allByOrganizer);
 
+    }
+
+    @Cacheable(cacheNames = "allEvents")
+    public PageResponse<EventDto> showAllEvents(int page, int size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
+        Page<Event> allEvents = eventRepository.findAll(pageable);
+        List<EventDto> eventsDtoList = allEvents.stream()
+                .map(EventMapper::convertEventToEventDto)
+                .toList();
+        return new PageResponse<>(
+                eventsDtoList,
+                allEvents.getNumber(),
+                allEvents.getSize(),
+                allEvents.getNumberOfElements(),
+                allEvents.getTotalPages(),
+                allEvents.isFirst(),
+                allEvents.isLast()
+        );
     }
 
     @Transactional

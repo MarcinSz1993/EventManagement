@@ -2,6 +2,7 @@ package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
+import com.marcinsz.eventmanagementsystem.model.PageResponse;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
@@ -71,8 +72,15 @@ public class EventController {
             return ResponseEntity.ok().body(eventDtos);
         } catch (UserNotFoundException ex){
             log.info("User with username {} not found", username);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
         }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<PageResponse<EventDto>> getAllEvents(
+            @RequestParam(name = "page",defaultValue = "0",required = false) int page,
+            @RequestParam(name = "size",defaultValue = "4",required = false) int size){
+        return ResponseEntity.ok(eventService.showAllEvents(page, size));
     }
 
     @PutMapping("/join")
