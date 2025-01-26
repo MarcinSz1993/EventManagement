@@ -192,7 +192,7 @@ class WeatherServiceTest {
                 .eventDescription("Example description")
                 .location("Lublin")
                 .maxAttendees(10)
-                .eventDate(LocalDate.of(2024, 12, 31))
+                .eventDate(LocalDate.of(2025, 1, 19))
                 .eventStatus(EventStatus.ACTIVE)
                 .ticketPrice(100.0)
                 .eventTarget(EventTarget.EVERYBODY)

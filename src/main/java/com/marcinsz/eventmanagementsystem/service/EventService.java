@@ -2,6 +2,7 @@ package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
+import com.marcinsz.eventmanagementsystem.exception.EventValidateException;
 import com.marcinsz.eventmanagementsystem.exception.NotYourEventException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -38,15 +40,24 @@ public class EventService {
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
 
-
     //todo wdrożyć mechanizm do automatycznego śledzenia utworzonych eventów i użytkowników
     //todo za pomocą @EntityListeners. (@CreatedBy, @ModifiedBy)
 
-    //todo utworzyć beana CorsFilter, aby umożliwić frontendowi dostęp do endpointów
+    public List<EventDto> getJoinedEvents(Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+        return eventRepository.getEventsJoinedByUser(user.getId())
+                 .stream()
+                 .map(EventMapper::convertEventToEventDto)
+                 .toList();
+    }
+
 
     @CacheEvict(cacheNames = "events", allEntries = true)
     @Transactional
     public EventDto createEvent(CreateEventRequest createEventRequest, User user) {
+        if(eventRepository.existsByEventName(createEventRequest.getEventName())){
+            throw new EventValidateException(String.format("Event with name %s already exists!", createEventRequest.getEventName()));
+        }
         Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
         event.setOrganizer(user);
         eventRepository.save(event);
@@ -134,8 +145,9 @@ public class EventService {
     @Transactional
     @CacheEvict(value = "events", allEntries = true)
     public void joinEvent(JoinEventRequest joinEventRequest, String eventName,String token) {
+        String extractedToken = token.substring(7);
 
-        String username = jwtService.extractUsername(token);
+        String username = jwtService.extractUsername(extractedToken);
         User foundUserByToken = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
         if(!foundUserByToken.getEmail().equals(joinEventRequest.email)){
             throw new IllegalArgumentException("You can use your email only!");
@@ -149,14 +161,17 @@ public class EventService {
         } else if (!isUserAdult(user.getBirthDate()) && foundEvent.getEventTarget().equals(EventTarget.ADULTS_ONLY)) {
             throw new IllegalArgumentException("You are too young to join this event!");
         } else if (foundEvent.getEventStatus().equals(EventStatus.COMPLETED)) {
-            throw new IllegalArgumentException("Sorry, this event is full.");
+            throw new IllegalArgumentException("You can't join because this event has been finished.");
         } else if (foundEvent.getEventStatus().equals(EventStatus.CANCELLED)) {
             throw new IllegalArgumentException("You cannot join to the event because this event has been cancelled.");
+        } else if (foundEvent.getEventStatus().equals(EventStatus.FULL)) {
+            throw new IllegalArgumentException("You cannot join to the event because this is full.");
         }
+
         foundEvent.getParticipants().add(user);
 
         if(foundEvent.getParticipants().size() == foundEvent.getMaxAttendees()){
-            foundEvent.setEventStatus(EventStatus.COMPLETED);
+            foundEvent.setEventStatus(EventStatus.FULL);
         }
         eventRepository.save(foundEvent);
     }
@@ -196,5 +211,10 @@ public class EventService {
     }
     public User findByUsername(String username){
         return userRepository.findByUsername(username).orElseThrow();
+    }
+
+    public EventDto getEventByName(String eventName) {
+        Event event = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
+        return EventMapper.convertEventToEventDto(event);
     }
 }

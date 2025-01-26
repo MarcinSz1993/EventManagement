@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+    @GetMapping("/email")
+    public ResponseEntity<String> getEmailFromToken(@RequestHeader("Authorization")String token) {
+        return ResponseEntity.ok(userService.getEmailFromToken(token));
+    }
+
+
     @PostMapping
     public CreateUserResponse createUser(@RequestBody @Valid CreateUserRequest createUserRequest,
                                          HttpServletResponse servletResponse){
@@ -35,14 +43,16 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public AuthenticationResponse login(@RequestBody @Valid AuthenticationRequest authenticationRequest,
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest authenticationRequest,
                                         HttpServletRequest httpServletRequest,
                                         HttpServletResponse servletResponse) {
         AuthenticationResponse login = userService.login(authenticationRequest,
                                                          httpServletRequest);
         String token = login.getToken();
         addTokenToCookie(token,servletResponse);
-        return login;
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(login);
     }
 
     @GetMapping("/preferences")

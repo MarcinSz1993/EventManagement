@@ -155,7 +155,7 @@ public class ControllerAdvisor {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> dataIntegrityViolationExceptionHandler(){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("User with a data you provided already exists.");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Event with a data you provided already exists.");
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

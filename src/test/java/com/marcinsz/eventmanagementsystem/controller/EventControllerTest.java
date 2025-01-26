@@ -199,7 +199,7 @@ class EventControllerTest {
         ResponseEntity<List<EventDto>> responseFromController = eventController.showAllOrganizerEvents(notExistingUsername);
 
         assertNotNull(responseFromController);
-        Assertions.assertThat(responseFromController.getBody()).isNull();
+        Assertions.assertThat(responseFromController.getBody()).isEmpty();
         Assertions.assertThat(responseFromController.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(404));
     }
 

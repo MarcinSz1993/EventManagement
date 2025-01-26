@@ -15,14 +15,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
+    //todo napisać metodę do pobierania wszysktich recenzji.
+    //todo napisać metodę do pobierania recenzji eventów danego użytkownika.
 
     private final ReviewService reviewService;
 
     @PostMapping
     public ResponseEntity<ReviewDto> writeReview(
                                                 @Valid @RequestBody WriteReviewRequest writeReviewRequest,
-                                                @CookieValue String token){
-        ReviewDto reviewDto = reviewService.writeReview(writeReviewRequest, token);
+                                                @RequestHeader("Authorization") String token){
+        String extractedToken = token.substring(7);
+        ReviewDto reviewDto = reviewService.writeReview(writeReviewRequest, extractedToken);
         return ResponseEntity.ok(reviewDto);
     }
 

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,15 @@ public class EventController {
     private final EventService eventService;
     private final JwtService jwtService;
 
+    @GetMapping("eventName")
+    public ResponseEntity<EventDto> getEventByName(@RequestParam String eventName){
+        return ResponseEntity.ok(eventService.getEventByName(eventName));
+    }
+    @GetMapping("/joined")
+    public ResponseEntity<List<EventDto>> getJoinedEvents(Authentication connectedUser){
+        return ResponseEntity.ok(eventService.getJoinedEvents(connectedUser));
+    }
+
     @GetMapping("{eventId}")
     public ResponseEntity<EventDto> getEvent(@PathVariable Long eventId){
         EventDto eventDto = eventService.getEventById(eventId);
@@ -39,11 +49,12 @@ public class EventController {
     @PostMapping
     public ResponseEntity<EventDto> createEvent(
                                 @RequestBody @Valid CreateEventRequest createEventRequest,
-                                @CookieValue String token) {
+                                @RequestHeader("Authorization") String token) {
         if (token.isEmpty()){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String username = jwtService.extractUsername(token);
+        String extractedToken = token.substring(7);
+        String username = jwtService.extractUsername(extractedToken);
         User user = eventService.findByUsername(username);
         EventDto event = eventService.createEvent(createEventRequest, user);
         URI newEventLocation = URI.create(String.format("/events/%d", event.getId()));
@@ -54,8 +65,9 @@ public class EventController {
     public ResponseEntity<EventDto> updateEvent(
                                                 @RequestBody @Valid UpdateEventRequest updateEventRequest,
                                                 @RequestParam Long eventId,
-                                                @CookieValue String token) {
-            EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, token);
+                                                @RequestHeader("Authorization") String token) {
+        String extractedToken = token.substring(7);
+        EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, extractedToken);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
     }
 
@@ -87,7 +99,8 @@ public class EventController {
     public ResponseEntity<String> joinEvent(
             @RequestBody @Valid JoinEventRequest joinEventRequest,
             @RequestParam String eventName,
-            @CookieValue String token) {
+            @RequestHeader("Authorization")String token
+    ) {
 
         try {
             eventService.joinEvent(joinEventRequest, eventName, token);
@@ -98,9 +111,10 @@ public class EventController {
     }
 
     @DeleteMapping
-    public ResponseEntity<String> deleteEvent(@RequestParam Long eventId, @CookieValue String token) {
+    public ResponseEntity<String> deleteEvent(@RequestParam Long eventId, @RequestHeader("Authorization") String token) {
         try {
-            String eventName = eventService.deleteEvent(eventId, token);
+            String extractedToken = token.substring(7);
+            String eventName = eventService.deleteEvent(eventId, extractedToken);
             return ResponseEntity.ok(String.format("You deleted event %s", eventName));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());

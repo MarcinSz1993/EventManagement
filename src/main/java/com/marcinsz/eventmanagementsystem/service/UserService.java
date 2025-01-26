@@ -38,6 +38,10 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final EventRepository eventRepository;
 
+
+
+
+
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest createUserRequest) {
         if (createUserRequest == null) {
@@ -146,6 +150,13 @@ public class UserService {
         if (userRepository.existsByAccountNumber(createUserRequest.getAccountNumber())){
             throw new UserAlreadyExistsException(String.format("User with account number %s already exists!", createUserRequest.getAccountNumber()));
         }
+    }
+
+    public String getEmailFromToken(String token) {
+        String extractedToken = token.substring(7);
+        String username = jwtService.extractUsername(extractedToken);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        return user.getEmail();
     }
 }
 

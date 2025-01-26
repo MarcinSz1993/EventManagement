@@ -15,6 +15,8 @@ import java.util.Optional;
 @Repository
 public interface EventRepository extends JpaRepository<Event,Long> {
 
+    boolean existsByEventName(String eventName);
+
     List<Event> findAllByOrganizer(User organizer);
 
     Optional<Event> findByEventName(String eventName);
@@ -23,4 +25,10 @@ public interface EventRepository extends JpaRepository<Event,Long> {
     List<Event> findAllByActiveEventStatus(@Param("status") EventStatus status);
 
     List<Event> findAllByEventTarget(EventTarget eventTarget);
+
+    @Query("""
+            SELECT event FROM Event event
+            join event.participants p
+            WHERE p.id = :userId""")
+    List<Event> getEventsJoinedByUser(Long userId);
 }

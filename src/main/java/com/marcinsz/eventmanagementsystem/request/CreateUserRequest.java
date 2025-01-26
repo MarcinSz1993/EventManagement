@@ -22,7 +22,7 @@ public class CreateUserRequest {
     @NotBlank(message = "Email is required")
     private String email;
     @NotBlank(message = "Username is required")
-    @Length(min = 5,max = 10,message = "Username must have between 5 and 10 characters")
+    @Length(min = 5,max = 15,message = "Username must have between 5 and 15 characters")
     private String username;
     @NotBlank(message = "Password is required")
     @Length(min = 5,message = "Password must have at least 5 characters")
