@@ -1,10 +1,12 @@
 FROM openjdk:22-jdk
 
 WORKDIR /app
+
+COPY . /app
+
+# Uruchamiamy Maven, aby zbudować aplikację
 RUN ./mvnw clean package -DskipTests
-COPY /app/target/EventManagementSystem-0.0.1-SNAPSHOT.jar /app/EventManagementSystem.jar
-COPY src/main/resources/db/changelog /app/src/main/resources/db/changelog
 
-EXPOSE 8080
+COPY target/EventManagementSystem-0.0.1-SNAPSHOT.jar /app/EventManagementSystem.jar
 
-CMD ["java", "-jar", "EventManagementSystem.jar"]
+CMD ["java", "-jar", "/app/EventManagementSystem.jar"]
