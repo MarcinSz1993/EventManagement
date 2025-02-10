@@ -14,5 +14,3 @@ create table reset_token
             references users
 );
 
-alter table reset_token
-    owner to postgres;
