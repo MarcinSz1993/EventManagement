@@ -4,7 +4,6 @@ WORKDIR /app
 
 COPY . /app
 
-# Uruchamiamy Maven, aby zbudować aplikację
 RUN ./mvnw clean package -DskipTests
 
 COPY target/EventManagementSystem-0.0.1-SNAPSHOT.jar /app/EventManagementSystem.jar
