@@ -7,12 +7,12 @@ spring:
 
 
   liquibase:
-    enabled: true
+    enabled: false
     change-log: classpath:db/changelog/changelog-master.xml
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: false
