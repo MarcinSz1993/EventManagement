@@ -1,5 +1,5 @@
 --liquibase formatted sql
---changeset:MarcinSz1993:17
+--changeset MarcinSz1993:17
 
 UPDATE event SET event_date = '2025-10-15' WHERE id = 1;
 UPDATE event SET event_date = '2025-03-20' WHERE id = 2;
