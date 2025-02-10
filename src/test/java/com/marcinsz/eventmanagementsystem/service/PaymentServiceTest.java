@@ -80,8 +80,7 @@ public class PaymentServiceTest {
                 jwtService,
                 userRepository,
                 eventRepository,
-                ticketRepository,
-                kafkaMessageProducer
+                ticketRepository
         );
     }
 
