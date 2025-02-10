@@ -1,8 +1,8 @@
 FROM openjdk:22-jdk
 
 WORKDIR /app
-
-RUN ./mvnw clean package -DskipTests -X
+COPY . /app
+RUN ./mvnw clean package -DskipTests
 COPY target/EventManagementSystem-0.0.1-SNAPSHOT.jar /app/EventManagementSystem.jar
 COPY src/main/resources/db/changelog /app/src/main/resources/db/changelog
 
