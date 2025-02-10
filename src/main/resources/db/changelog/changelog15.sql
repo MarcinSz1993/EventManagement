@@ -1,0 +1,1 @@
+GRANT ALL PRIVILEGES ON TABLE reset_token TO marcinsz1993;
