@@ -43,7 +43,8 @@ public class User implements UserDetails {
     private String accountStatus;
 
 
-    @ManyToMany(mappedBy = "participants",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+
+    @ManyToMany(mappedBy = "participants",cascade = CascadeType.REMOVE,fetch = FetchType.EAGER)
     @JsonBackReference
     private List<Event> events;
 

@@ -2,6 +2,8 @@ package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
+import com.marcinsz.eventmanagementsystem.model.DeleteEventResponse;
+import com.marcinsz.eventmanagementsystem.model.LeaveEventResponse;
 import com.marcinsz.eventmanagementsystem.model.PageResponse;
 import com.marcinsz.eventmanagementsystem.model.User;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
@@ -31,26 +33,45 @@ public class EventController {
     private final EventService eventService;
     private final JwtService jwtService;
 
+    @DeleteMapping("/leaveEvent")
+    public ResponseEntity<LeaveEventResponse> leaveEvent(@RequestParam Long eventId, Authentication connectedUser) {
+        String eventName = eventService.leaveEvent(eventId, connectedUser);
+        return ResponseEntity.ok(LeaveEventResponse.builder()
+                .message("You successfully left the event " + eventName)
+                .status(HttpStatus.OK.value())
+                .build());
+    }
+
     @GetMapping("eventName")
-    public ResponseEntity<EventDto> getEventByName(@RequestParam String eventName){
+    public ResponseEntity<EventDto> getEventByName(@RequestParam String eventName) {
         return ResponseEntity.ok(eventService.getEventByName(eventName));
     }
+
+    @GetMapping("/joined-completed")
+    public ResponseEntity<PageResponse<EventDto>> getCompletedJoinedEvents(@RequestParam(name = "page", defaultValue = "0", required = false) int page,
+                                                                           @RequestParam(name = "size", defaultValue = "3", required = false) int size,
+                                                                           Authentication connectedUser) {
+        return ResponseEntity.ok(eventService.getCompletedJoinedEvents(page, size, connectedUser));
+    }
+
     @GetMapping("/joined")
-    public ResponseEntity<List<EventDto>> getJoinedEvents(Authentication connectedUser){
-        return ResponseEntity.ok(eventService.getJoinedEvents(connectedUser));
+    public ResponseEntity<PageResponse<EventDto>> getFullAndActiveJoinedEvents(@RequestParam(name = "page", defaultValue = "0", required = false) int page,
+                                                                               @RequestParam(name = "size", defaultValue = "3", required = false) int size,
+                                                                               Authentication connectedUser) {
+        return ResponseEntity.ok(eventService.getFullAndActiveJoinedEvents(page, size, connectedUser));
     }
 
     @GetMapping("{eventId}")
-    public ResponseEntity<EventDto> getEvent(@PathVariable Long eventId){
+    public ResponseEntity<EventDto> getEvent(@PathVariable Long eventId) {
         EventDto eventDto = eventService.getEventById(eventId);
         return ResponseEntity.ok(eventDto);
     }
 
     @PostMapping
     public ResponseEntity<EventDto> createEvent(
-                                @RequestBody @Valid CreateEventRequest createEventRequest,
-                                @RequestHeader("Authorization") String token) {
-        if (token.isEmpty()){
+            @RequestBody @Valid CreateEventRequest createEventRequest,
+            @RequestHeader("Authorization") String token) {
+        if (token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String extractedToken = token.substring(7);
@@ -63,26 +84,26 @@ public class EventController {
 
     @PutMapping
     public ResponseEntity<EventDto> updateEvent(
-                                                @RequestBody @Valid UpdateEventRequest updateEventRequest,
-                                                @RequestParam Long eventId,
-                                                @RequestHeader("Authorization") String token) {
+            @RequestBody @Valid UpdateEventRequest updateEventRequest,
+            @RequestParam Long eventId,
+            @RequestHeader("Authorization") String token) {
         String extractedToken = token.substring(7);
         EventDto eventDto = eventService.updateEvent(updateEventRequest, eventId, extractedToken);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(eventDto);
     }
 
     @GetMapping
     public ResponseEntity<List<EventDto>> showAllOrganizerEvents(@RequestParam String username) {
         try {
             List<EventDto> eventDtos = eventService.showAllOrganizerEvents(username);
-            if(eventDtos.isEmpty()) {
+            if (eventDtos.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK)
-                        .header("Message","User " + username + " does not have any events")
+                        .header("Message", "User " + username + " does not have any events")
                         .body(Collections.emptyList());
 
             }
             return ResponseEntity.ok().body(eventDtos);
-        } catch (UserNotFoundException ex){
+        } catch (UserNotFoundException ex) {
             log.info("User with username {} not found", username);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
         }
@@ -90,8 +111,8 @@ public class EventController {
 
     @GetMapping("/all")
     public ResponseEntity<PageResponse<EventDto>> getAllEvents(
-            @RequestParam(name = "page",defaultValue = "0",required = false) int page,
-            @RequestParam(name = "size",defaultValue = "4",required = false) int size){
+            @RequestParam(name = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(name = "size", defaultValue = "4", required = false) int size) {
         return ResponseEntity.ok(eventService.showAllEvents(page, size));
     }
 
@@ -99,7 +120,7 @@ public class EventController {
     public ResponseEntity<String> joinEvent(
             @RequestBody @Valid JoinEventRequest joinEventRequest,
             @RequestParam String eventName,
-            @RequestHeader("Authorization")String token
+            @RequestHeader("Authorization") String token
     ) {
 
         try {
@@ -111,13 +132,14 @@ public class EventController {
     }
 
     @DeleteMapping
-    public ResponseEntity<String> deleteEvent(@RequestParam Long eventId, @RequestHeader("Authorization") String token) {
-        try {
-            String extractedToken = token.substring(7);
-            String eventName = eventService.deleteEvent(eventId, extractedToken);
-            return ResponseEntity.ok(String.format("You deleted event %s", eventName));
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exception.getMessage());
-        }
+    public ResponseEntity<DeleteEventResponse> deleteEvent(@RequestParam Long eventId, @RequestHeader("Authorization") String token) {
+
+        String extractedToken = token.substring(7);
+        String eventName = eventService.deleteEvent(eventId, extractedToken);
+        return ResponseEntity.ok(
+                DeleteEventResponse.builder()
+                        .message("You deleted the event " + eventName.toUpperCase())
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
     }
 }

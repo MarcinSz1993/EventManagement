@@ -86,8 +86,8 @@ WeatherService {
     }
 
     private void validateEvent(EventStatus eventStatus) {
-        if (!eventStatus.equals(EventStatus.ACTIVE)) {
-            throw new EventValidateException("You can't check a forecast for a day of this event because the event has ended.");
+        if (!eventStatus.equals(EventStatus.ACTIVE) && !eventStatus.equals(EventStatus.FULL)) {
+            throw new EventValidateException("You can't check a forecast for a day of this event because the event has ended or cancelled.");
         }
     }
 }

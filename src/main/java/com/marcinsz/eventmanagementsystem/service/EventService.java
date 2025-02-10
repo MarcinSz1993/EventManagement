@@ -1,10 +1,7 @@
 package com.marcinsz.eventmanagementsystem.service;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
-import com.marcinsz.eventmanagementsystem.exception.EventNotFoundException;
-import com.marcinsz.eventmanagementsystem.exception.EventValidateException;
-import com.marcinsz.eventmanagementsystem.exception.NotYourEventException;
-import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
+import com.marcinsz.eventmanagementsystem.exception.*;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
 import com.marcinsz.eventmanagementsystem.model.*;
@@ -40,84 +37,167 @@ public class EventService {
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
 
-    //todo wdrożyć mechanizm do automatycznego śledzenia utworzonych eventów i użytkowników
-    //todo za pomocą @EntityListeners. (@CreatedBy, @ModifiedBy)
-
-    public List<EventDto> getJoinedEvents(Authentication connectedUser) {
+    @Transactional
+    public String leaveEvent(Long eventId, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-        return eventRepository.getEventsJoinedByUser(user.getId())
-                 .stream()
-                 .map(EventMapper::convertEventToEventDto)
-                 .toList();
+        Event eventUserWantsToLeave = eventRepository.findByIdAndUserId(eventId, user.getId())
+                .orElseThrow(() -> new UserNotParticipantException("You are not a participant of this event"));
+        validateEventAndUserBeforeExecuteLeaveEventMethod(eventUserWantsToLeave);
+        eventUserWantsToLeave.getParticipants().removeIf(userToRemove -> userToRemove.getId().equals(user.getId()));
+        if (eventUserWantsToLeave.getParticipants().size() < eventUserWantsToLeave.getMaxAttendees()) {
+            eventUserWantsToLeave.setEventStatus(EventStatus.ACTIVE);
+        }
+        user.getEvents().removeIf(eventToRemove -> eventToRemove.getId().equals(eventId));
+        return eventUserWantsToLeave.getEventName();
     }
 
 
-    @CacheEvict(cacheNames = "events", allEntries = true)
+    private static void validateEventAndUserBeforeExecuteLeaveEventMethod(Event event) {
+
+        if (!event.getEventStatus().equals(EventStatus.ACTIVE) && !event.getEventStatus().equals(EventStatus.FULL)) {
+            throw new IllegalStateException("Event is COMPLETED or CANCELLED");
+        }
+    }
+
+    public PageResponse<EventDto> getCompletedJoinedEvents(int page, int size, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").descending());
+        Page<Event> joinedEvents = eventRepository.findCompletedEventsJoinedByUser(user.getId(), pageable);
+        List<EventDto> joinedEventsDtoList = joinedEvents.getContent().stream()
+                .map(EventMapper::convertEventToEventDto)
+                .toList();
+
+        return new PageResponse<>(
+                joinedEventsDtoList,
+                joinedEvents.getNumber(),
+                joinedEvents.getSize(),
+                joinedEvents.getNumberOfElements(),
+                joinedEvents.getTotalPages(),
+                joinedEvents.isFirst(),
+                joinedEvents.isLast()
+        );
+    }
+
+    public PageResponse<EventDto> getFullAndActiveJoinedEvents(int page, int size, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").descending());
+        Page<Event> joinedEvents = eventRepository.findFullAndActiveEventsJoinedByUser(user.getId(), pageable);
+        List<EventDto> joinedEventsDtoList = joinedEvents.getContent().stream()
+                .map(EventMapper::convertEventToEventDto)
+                .toList();
+
+        return new PageResponse<>(
+                joinedEventsDtoList,
+                joinedEvents.getNumber(),
+                joinedEvents.getSize(),
+                joinedEvents.getNumberOfElements(),
+                joinedEvents.getTotalPages(),
+                joinedEvents.isFirst(),
+                joinedEvents.isLast()
+        );
+    }
+
+    public PageResponse<EventDto> getAllJoinedEvents(int page, int size, Authentication connectedUser) {
+        User user = (User) connectedUser.getPrincipal();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").descending());
+        Page<Event> joinedEvents = eventRepository.findFullAndActiveEventsJoinedByUser(user.getId(), pageable);
+        List<EventDto> joinedEventsDtoList = joinedEvents.getContent().stream()
+                .map(EventMapper::convertEventToEventDto)
+                .toList();
+
+        return new PageResponse<>(
+                joinedEventsDtoList,
+                joinedEvents.getNumber(),
+                joinedEvents.getSize(),
+                joinedEvents.getNumberOfElements(),
+                joinedEvents.getTotalPages(),
+                joinedEvents.isFirst(),
+                joinedEvents.isLast()
+        );
+    }
+
+    @CacheEvict(cacheNames = {"allEvents","organizerEvents"}, allEntries = true)
     @Transactional
     public EventDto createEvent(CreateEventRequest createEventRequest, User user) {
-        if(eventRepository.existsByEventName(createEventRequest.getEventName())){
+        if (eventRepository.existsByEventName(createEventRequest.getEventName())) {
             throw new EventValidateException(String.format("Event with name %s already exists!", createEventRequest.getEventName()));
         }
         Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
         event.setOrganizer(user);
         eventRepository.save(event);
-        EventDto eventDto = EventMapper.convertCreateEventRequestToEventDto(createEventRequest,user, event.getId());
+        EventDto eventDto = EventMapper.convertCreateEventRequestToEventDto(createEventRequest, user, event.getId());
         kafkaMessageProducer.sendCreatedEventMessageToAllEventsTopic(eventDto);
         return eventDto;
     }
 
-    public EventDto getEventById(Long eventId){
+    public EventDto getEventById(Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
         return EventMapper.convertEventToEventDto(event);
     }
 
-    @CacheEvict(cacheNames = "events",allEntries = true)
-    public EventDto updateEvent(UpdateEventRequest updateEventRequest,Long eventId,String token) {
-        Event foundEvent = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+    @CacheEvict(cacheNames = {"allEvents","organizerEvents"}, allEntries = true)
+    public EventDto updateEvent(UpdateEventRequest updateEventRequest, Long eventId, String token) {
+        Event foundEvent = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
 
         String organiserUsername = foundEvent.getOrganizer().getUsername();
         String usernameExtractedFromToken = jwtService.extractUsername(token);
 
-        if(!organiserUsername.equals(usernameExtractedFromToken)){
+        if (!organiserUsername.equals(usernameExtractedFromToken)) {
             throw new NotYourEventException();
         }
 
-        String eventName = updateEventRequest.getEventName();
-        if(eventName != null && !eventName.isEmpty()){
-            foundEvent.setEventName(eventName);
+        if (updateEventRequest.getEventName() != null && !updateEventRequest.getEventName().isEmpty()) {
+            foundEvent.setEventName(updateEventRequest.getEventName());
         }
-        String eventDescription = updateEventRequest.getEventDescription();
-        if(eventDescription != null && !eventDescription.isEmpty()){
-            foundEvent.setEventDescription(eventDescription);
+
+        if (updateEventRequest.getEventDescription() != null && !updateEventRequest.getEventDescription().isEmpty()) {
+            foundEvent.setEventDescription(updateEventRequest.getEventDescription());
         }
-        String location = updateEventRequest.getLocation();
-        if(location != null && !location.isEmpty()){
-            foundEvent.setLocation(location);
+
+        if (updateEventRequest.getLocation() != null && !updateEventRequest.getLocation().isEmpty()) {
+            foundEvent.setLocation(updateEventRequest.getLocation());
         }
-        Integer maxAttendees = updateEventRequest.getMaxAttendees();
-        if(maxAttendees != null){
+
+        if (updateEventRequest.getMaxAttendees() != null) {
+            int maxAttendees = updateEventRequest.getMaxAttendees();
+            int currentParticipants = foundEvent.getParticipants().size();
+
+            if (maxAttendees < currentParticipants) {
+                throw new IllegalStateException("New max attendees cannot be smaller than current amount of joined participants!");
+            }
+
             foundEvent.setMaxAttendees(maxAttendees);
+
+            if (foundEvent.getEventStatus() != EventStatus.FULL || maxAttendees > currentParticipants) {
+                foundEvent.setEventStatus(maxAttendees == currentParticipants ? EventStatus.FULL : EventStatus.ACTIVE);
+            }
         }
-        LocalDate eventDate = updateEventRequest.getEventDate();
-        if(eventDate != null){
-            foundEvent.setEventDate(eventDate);
+
+        if (updateEventRequest.getEventDate() != null && !updateEventRequest.getEventDate().isBefore(LocalDate.now())) {
+            foundEvent.setEventDate(updateEventRequest.getEventDate());
         }
-        Double ticketPrice = updateEventRequest.getTicketPrice();
-        if(ticketPrice != null){
+
+        if (updateEventRequest.getTicketPrice() != null) {
+            double ticketPrice = updateEventRequest.getTicketPrice();
+            if (ticketPrice < 0) {
+                throw new IllegalArgumentException("Ticket price cannot be negative!");
+            }
             foundEvent.setTicketPrice(ticketPrice);
         }
-        EventTarget eventTarget = updateEventRequest.getEventTarget();
-        if(eventTarget != null){
-            foundEvent.setEventTarget(eventTarget);
+
+        if (updateEventRequest.getEventTarget() != null) {
+            foundEvent.setEventTarget(updateEventRequest.getEventTarget());
         }
 
         foundEvent.setModifiedDate(LocalDateTime.now());
         eventRepository.save(foundEvent);
+
         return EventMapper.convertEventToEventDto(foundEvent);
     }
 
-    @Cacheable(cacheNames = "events")
-    public List<EventDto> showAllOrganizerEvents(String username){
+    @Cacheable(cacheNames = "organizerEvents")
+    public List<EventDto> showAllOrganizerEvents(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
         List<Event> allByOrganizer = eventRepository.findAllByOrganizer(user);
         return EventMapper.convertListEventToListEventDto(allByOrganizer);
@@ -125,7 +205,7 @@ public class EventService {
     }
 
     @Cacheable(cacheNames = "allEvents")
-    public PageResponse<EventDto> showAllEvents(int page, int size){
+    public PageResponse<EventDto> showAllEvents(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
         Page<Event> allEvents = eventRepository.findAll(pageable);
         List<EventDto> eventsDtoList = allEvents.stream()
@@ -143,59 +223,78 @@ public class EventService {
     }
 
     @Transactional
-    @CacheEvict(value = "events", allEntries = true)
-    public void joinEvent(JoinEventRequest joinEventRequest, String eventName,String token) {
+    @CacheEvict(value = {"allEvents","organizerEvents"}, allEntries = true)
+    public void joinEvent(JoinEventRequest joinEventRequest, String eventName, String token) {
         String extractedToken = token.substring(7);
 
         String username = jwtService.extractUsername(extractedToken);
         User foundUserByToken = userRepository.findByUsername(username).orElseThrow(() -> UserNotFoundException.forUsername(username));
-        if(!foundUserByToken.getEmail().equals(joinEventRequest.email)){
+        if (!foundUserByToken.getEmail().equals(joinEventRequest.email)) {
             throw new IllegalArgumentException("You can use your email only!");
         }
         Event foundEvent = eventRepository.findByEventName(eventName).orElseThrow(() -> new EventNotFoundException(eventName));
-        User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(joinEventRequest.email));
 
+        User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(joinEventRequest.email));
+        if (user.getId().equals(foundEvent.getOrganizer().getId())) {
+            throw new IllegalArgumentException("You cannot join your own event!");
+        }
         UserMapper.convertUserToUserDto(user);
-        if(foundEvent.getParticipants().contains(user)){
+        if (foundEvent.getEventStatus().equals(EventStatus.FULL)) {
+            throw new IllegalArgumentException("You cannot join to the event because this is full.");
+        } else if (foundEvent.getEventStatus().equals(EventStatus.CANCELLED)) {
+            throw new IllegalArgumentException("You cannot join to the event because this event has been cancelled.");
+        } else if (foundEvent.getEventStatus().equals(EventStatus.COMPLETED)) {
+            throw new IllegalArgumentException("You can't join because this event has been finished.");
+        } else if (foundEvent.getParticipants().contains(user)) {
             throw new IllegalArgumentException("You already joined to this event!");
         } else if (!isUserAdult(user.getBirthDate()) && foundEvent.getEventTarget().equals(EventTarget.ADULTS_ONLY)) {
             throw new IllegalArgumentException("You are too young to join this event!");
-        } else if (foundEvent.getEventStatus().equals(EventStatus.COMPLETED)) {
-            throw new IllegalArgumentException("You can't join because this event has been finished.");
-        } else if (foundEvent.getEventStatus().equals(EventStatus.CANCELLED)) {
-            throw new IllegalArgumentException("You cannot join to the event because this event has been cancelled.");
-        } else if (foundEvent.getEventStatus().equals(EventStatus.FULL)) {
-            throw new IllegalArgumentException("You cannot join to the event because this is full.");
         }
 
         foundEvent.getParticipants().add(user);
 
-        if(foundEvent.getParticipants().size() == foundEvent.getMaxAttendees()){
+        if (foundEvent.getParticipants().size() == foundEvent.getMaxAttendees()) {
             foundEvent.setEventStatus(EventStatus.FULL);
         }
         eventRepository.save(foundEvent);
     }
 
-    @CacheEvict(cacheNames = "events",allEntries = true)
+    @CacheEvict(cacheNames = {"allEvents","organizerEvents"}, allEntries = true)
     @Transactional
     @PreAuthorize("hasRole('USER')")
     public String deleteEvent(Long eventId, String token) {
-        Event eventToDelete = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(eventId));
+        Event eventToDelete = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(eventId));
+
         String organiserUsername = eventToDelete.getOrganizer().getUsername();
         String usernameLoggedUser = jwtService.extractUsername(token);
-        String eventName = eventToDelete.getEventName();
+
+        if (!usernameLoggedUser.equals(organiserUsername)) {
+            throw new IllegalArgumentException("You can delete your events only!");
+        } else if (eventToDelete.getEventStatus().equals(EventStatus.COMPLETED)
+                || eventToDelete.getEventStatus().equals(EventStatus.CANCELLED)) {
+            throw new IllegalArgumentException("You can delete ACTIVE or FULL events ONLY!");
+        }
+
+        eventToDelete.getParticipants().clear();
+        eventToDelete.getReviews().clear();
+        eventToDelete.getTickets().clear();
+
+        eventRepository.saveAndFlush(eventToDelete);
+
+        eventRepository.delete(eventToDelete);
+        eventRepository.flush();
+
         EventDto eventDto = EventMapper.convertEventToEventDto(eventToDelete);
         eventDto.setEventStatus(EventStatus.CANCELLED);
-        if(!usernameLoggedUser.equals(organiserUsername)){
-            throw new IllegalArgumentException("You can delete your events only!");
-        }
-        eventRepository.deleteById(eventId);
         kafkaMessageProducer.sendCancelledEventMessageToCancellationTopic(eventDto);
-        return eventName;
+
+        return eventToDelete.getEventName();
     }
 
+    @CacheEvict(value = {"allEvents","organizerEvents"},allEntries = true)
     @Scheduled(cron = "0 32 13 * * ? ")
-    public void updateEventsStatuses(){
+    public void updateEventsStatuses() {
         List<Event> activeEventsList = eventRepository.findAllByActiveEventStatus(EventStatus.ACTIVE);
         activeEventsList.forEach(event -> {
             if (event.getEventDate().isBefore(LocalDate.now())) {
@@ -206,10 +305,11 @@ public class EventService {
         log.info("Event statuses have been updated");
     }
 
-    boolean isUserAdult(LocalDate dateOfBirth){
+    boolean isUserAdult(LocalDate dateOfBirth) {
         return dateOfBirth.isBefore(LocalDate.now().minusYears(18));
     }
-    public User findByUsername(String username){
+
+    public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow();
     }
 

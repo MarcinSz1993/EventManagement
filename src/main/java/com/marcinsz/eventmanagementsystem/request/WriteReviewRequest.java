@@ -14,12 +14,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WriteReviewRequest {
-    @NotEmpty
-    @NotBlank
+    @NotEmpty(message = "Event name cannot be empty.")
+    @NotBlank(message = "Event name cannot be empty.")
     private String eventName;
-    @Min(1)
-    @Max(5)
+    @Min(value = 1,message = "Choose the degree between 1 and 5.")
+    @Max(value = 5,message = "Choose the degree between 1 and 5.")
     private int degree;
-    @NotBlank
+    @NotBlank(message = "Review content cannot be empty.")
     private String content;
 }

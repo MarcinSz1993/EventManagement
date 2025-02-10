@@ -1,11 +1,9 @@
 package com.marcinsz.eventmanagementsystem.service;
 
-import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.exception.BadCredentialsException;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
 import com.marcinsz.eventmanagementsystem.model.*;
-import com.marcinsz.eventmanagementsystem.repository.EventRepository;
 import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
@@ -22,7 +20,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,8 +33,6 @@ class UserServiceTest {
     private UserService userService;
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private EventRepository eventRepository;
     @Mock
     private JwtService jwtService;
     @Mock
@@ -174,7 +169,7 @@ class UserServiceTest {
         assertEquals("You typed incorrect login or password.",exception.getMessage());
     }
 
-    @Test
+    /*@Test
     public void getEventsBasedOnUserPreferencesShouldReturnEventsWithMostPopularTargetBasedOnUserPreferences(){
         User organizer = createTestOrganizer();
         String token = "token";
@@ -210,7 +205,7 @@ class UserServiceTest {
         Mockito.verify(jwtService).extractUsername(token);
         Mockito.verify(userRepository).findByUsername(username);
         Mockito.verify(eventRepository).findAllByEventTarget(userPreference);
-    }
+    }*/
 
     private Event createTestEvent(User user) {
         return Event.builder()

@@ -51,7 +51,7 @@ class EventControllerTest {
 
         Mockito.when(eventService.deleteEvent(eventId, token)).thenThrow(new IllegalArgumentException("You can delete your events only!"));
 
-        ResponseEntity<String> response = eventController.deleteEvent(eventId, token);
+        ResponseEntity<DeleteEventResponse> response = eventController.deleteEvent(eventId, token);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertEquals("You can delete your events only!", response.getBody());
@@ -66,7 +66,7 @@ class EventControllerTest {
         String eventName = "Test event";
         Mockito.when(eventService.deleteEvent(eventId, token)).thenReturn(eventName);
 
-        ResponseEntity<String> response = eventController.deleteEvent(eventId, token);
+        ResponseEntity<DeleteEventResponse> response = eventController.deleteEvent(eventId, token);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Assertions.assertThat(response.getBody()).isEqualTo("You deleted event Test event");

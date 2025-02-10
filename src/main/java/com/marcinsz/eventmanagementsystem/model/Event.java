@@ -36,15 +36,11 @@ public class Event {
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.REMOVE)
     @JoinTable(
             name = "participants_events",
-            joinColumns = {
-                    @JoinColumn(name = "event_id")
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(name = "user_id")
-            }
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @JsonManagedReference
     private List<User> participants;
@@ -54,11 +50,11 @@ public class Event {
     @JsonBackReference
     private User organizer;
 
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Review> reviews;
 
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Ticket> tickets;
 

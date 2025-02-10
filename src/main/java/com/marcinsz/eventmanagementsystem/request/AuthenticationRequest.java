@@ -12,11 +12,11 @@ import org.hibernate.validator.constraints.Length;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthenticationRequest {
-    @Length(min = 5,max = 15)
-    @NotBlank
+    @Length(min = 5,max = 15,message = "Username should have between 5 and 15 characters.")
+    @NotBlank(message = "Username is required!")
     private String username;
 
-    @Length(min = 5)
-    @NotBlank
+    @Length(min = 5,max = 25,message = "Password should have between 5 and 25 characters.")
+    @NotBlank(message = "Password is required!")
     private String password;
 }

@@ -77,7 +77,7 @@ spring:
 
 weather:
   api:
-    apiKey: 80748648b31e475ba43112900240208
+    apiKey: ${API_KEY}
     baseUrl: https://api.weatherapi.com/v1/forecast.json
 
 logging:

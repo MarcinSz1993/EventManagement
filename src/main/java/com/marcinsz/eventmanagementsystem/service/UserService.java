@@ -4,7 +4,6 @@ import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.dto.UserDto;
 import com.marcinsz.eventmanagementsystem.exception.BadCredentialsException;
 import com.marcinsz.eventmanagementsystem.exception.UserAlreadyExistsException;
-import com.marcinsz.eventmanagementsystem.exception.UserHasNoPreferencesYetException;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
 import com.marcinsz.eventmanagementsystem.mapper.EventMapper;
 import com.marcinsz.eventmanagementsystem.mapper.UserMapper;
@@ -17,6 +16,10 @@ import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -39,13 +42,10 @@ public class UserService {
     private final EventRepository eventRepository;
 
 
-
-
-
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest createUserRequest) {
         if (createUserRequest == null) {
-            throw new NullPointerException("CreateUserRequest cannot be null!");
+            throw new IllegalArgumentException("CreateUserRequest cannot be null!");
         }
 
         userExists(createUserRequest);
@@ -77,28 +77,28 @@ public class UserService {
         return new AuthenticationResponse(token);
     }
 
-    public List<EventDto> getEventsBasedOnUserPreferences(String token) {
+    @Transactional(readOnly = true)
+    public PageResponse<EventDto> getEventsBasedOnUserPreferences(String token, int page, int size){
         String username = jwtService.extractUsername(token);
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Pageable pageable = PageRequest.of(page,size,Sort.by("ticketPrice").descending());
+        EventTarget preferedEventTarget = getPreferedEventTarget(user);
 
-        try {
-            EventTarget userPreferenceTarget = getPreferedEventTarget(user);
-            List<Event> eventsByEventTarget = eventRepository.findAllByEventTarget(userPreferenceTarget);
-            Set<Event> setEventsByEventTarget = new HashSet<>(eventsByEventTarget.size());
-            setEventsByEventTarget.addAll(eventsByEventTarget);
+        Page<Event> allByEventTargetAndNotJoined = eventRepository.findAllByEventTargetAndActiveStatusAndNotJoined(preferedEventTarget, user.getId(), pageable);
 
-            return setEventsByEventTarget.stream()
-                    .filter(event -> !user.getEvents().contains(event))
-                    .map(EventMapper::convertEventToEventDto)
-                    .toList();
-        } catch (UserHasNoPreferencesYetException e) {
-            List<Event> allEventsForEverybody = eventRepository.findAllByEventTarget(EventTarget.EVERYBODY);
-            Collections.shuffle(allEventsForEverybody);
-            return allEventsForEverybody.stream()
-                    .limit(3)
-                    .map(EventMapper::convertEventToEventDto)
-                    .toList();
-        }
+        List<EventDto> allByEventTargetAndNotJoinedDtoList = allByEventTargetAndNotJoined.stream()
+                .map(EventMapper::convertEventToEventDto)
+                .toList();
+
+        return PageResponse.<EventDto>builder()
+                .content(allByEventTargetAndNotJoinedDtoList)
+                .number(allByEventTargetAndNotJoined.getNumber())
+                .size(allByEventTargetAndNotJoined.getSize())
+                .totalElements(allByEventTargetAndNotJoined.getTotalElements())
+                .totalPages(allByEventTargetAndNotJoined.getTotalPages())
+                .first(allByEventTargetAndNotJoined.isFirst())
+                .last(allByEventTargetAndNotJoined.isLast())
+                .build();
     }
 
     public void changePassword(ChangePasswordRequest changePasswordRequest, Principal connectedUser) {
@@ -131,7 +131,7 @@ public class UserService {
                 .stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
-                .orElseThrow(UserHasNoPreferencesYetException::new);
+                .orElse(EventTarget.EVERYBODY);
     }
 
     private void userExists(CreateUserRequest createUserRequest){

@@ -3,6 +3,7 @@ package com.marcinsz.eventmanagementsystem.controller;
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.model.AuthenticationResponse;
 import com.marcinsz.eventmanagementsystem.model.CreateUserResponse;
+import com.marcinsz.eventmanagementsystem.model.PageResponse;
 import com.marcinsz.eventmanagementsystem.request.AuthenticationRequest;
 import com.marcinsz.eventmanagementsystem.request.ChangePasswordRequest;
 import com.marcinsz.eventmanagementsystem.request.CreateUserRequest;
@@ -18,7 +19,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @Validated
 @RestController
@@ -26,6 +26,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+
 
     @GetMapping("/email")
     public ResponseEntity<String> getEmailFromToken(@RequestHeader("Authorization")String token) {
@@ -56,10 +58,12 @@ public class UserController {
     }
 
     @GetMapping("/preferences")
-    public List<EventDto> getEventsListBasedOnUserPreferences(@RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<PageResponse<EventDto>> getEventsListBasedOnUserPreferences(@RequestHeader("Authorization") String authorizationHeader,
+                                                                                      @RequestParam(name = "page",defaultValue = "0",required = false) int page,
+                                                                                      @RequestParam(name = "size",defaultValue = "2",required = false) int size){
         String token = authorizationHeader.substring("Bearer ".length());
         System.out.println(token);
-        return userService.getEventsBasedOnUserPreferences(token);
+        return ResponseEntity.ok(userService.getEventsBasedOnUserPreferences(token,page,size));
     }
 
     @PatchMapping("/changePassword")
