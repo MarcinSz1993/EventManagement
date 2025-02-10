@@ -22,4 +22,5 @@
     <include file="/db/changelog/changelog13.sql"/>
     <include file="/db/changelog/changelog14.sql"/>
     <include file="/db/changelog/changelog15.sql"/>
+    <include file="/db/changelog/changelog16.sql"/>
 </databaseChangeLog>
