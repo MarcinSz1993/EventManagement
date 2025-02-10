@@ -100,7 +100,7 @@ public class UserIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(authenticationRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(status().is(400))
+                .andExpect(status().is(403))
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedError)))
                 .andReturn();
     }

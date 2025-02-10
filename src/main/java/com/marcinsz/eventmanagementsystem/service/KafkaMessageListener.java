@@ -16,7 +16,6 @@ import com.marcinsz.eventmanagementsystem.request.TransactionKafkaRequest;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -33,7 +32,7 @@ public class KafkaMessageListener {
     private final EventRepository eventRepository;
     private final TicketRepository ticketRepository;
 
-    @KafkaListener(topics = "${spring.kafka.config.allEventsTopic}", groupId = "${spring.kafka.config.bankServiceGroupId}")
+    //@KafkaListener(topics = "${spring.kafka.config.allEventsTopic}", groupId = "${spring.kafka.config.bankServiceGroupId}")
     public void consumeCreateEventMessage(EventDto eventDto) throws MessagingException {
         log.info("Received EventDto: {}", eventDto);
         if (eventDto.getEventTarget().equals(EventTarget.ADULTS_ONLY)) {
@@ -45,7 +44,7 @@ public class KafkaMessageListener {
         }
     }
 
-    @KafkaListener(topics = "${spring.kafka.config.cancelledEventsTopic}",groupId = "${spring.kafka.config.bankServiceGroupId}")
+    //@KafkaListener(topics = "${spring.kafka.config.cancelledEventsTopic}",groupId = "${spring.kafka.config.bankServiceGroupId}")
     public void consumeEventCancelledMessage(EventDto eventDto) throws MessagingException {
         notificationService.sendNotification(eventDto);
     }
@@ -54,7 +53,7 @@ public class KafkaMessageListener {
         return userRepository.getEmailsFromAdultUsers(date);
     }
 
-    @KafkaListener(topics = "${spring.kafka.config.completedPaymentsTopic}",groupId = "${spring.kafka.config.bankServiceGroupId}")
+    //@KafkaListener(topics = "${spring.kafka.config.completedPaymentsTopic}",groupId = "${spring.kafka.config.bankServiceGroupId}")
     public void handleExpectingPayment(String message) throws JsonProcessingException {
         System.out.println(message);
         ObjectMapper objectMapper = new ObjectMapper();
@@ -70,7 +69,7 @@ public class KafkaMessageListener {
         log.info(String.format("Ticket for event %s has been purchased",event.getEventName()));
     }
 
-    @KafkaListener(topics = "${spring.kafka.config.failedPaymentsTopic}",groupId = "${spring.kafka.config.bankServiceGroupId}")
+    //@KafkaListener(topics = "${spring.kafka.config.failedPaymentsTopic}",groupId = "${spring.kafka.config.bankServiceGroupId}")
     public void handleFailedTransactions(String message) throws JsonProcessingException, MessagingException {
         ObjectMapper objectMapper = new ObjectMapper();
         TransactionKafkaRequest transactionKafkaRequest = objectMapper.readValue(message, TransactionKafkaRequest.class);

@@ -32,7 +32,7 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final TicketRepository ticketRepository;
-    private final KafkaMessageProducer kafkaMessageProducer;
+    //private final KafkaMessageProducer kafkaMessageProducer;
 
     @Transactional
     public String buyTicket(BuyTicketRequest buyTicketRequest, String token) {
@@ -55,12 +55,10 @@ public class PaymentService {
             ticketRepository.save(ticket);
         } catch (WebClientRequestException exception) {
             log.error("WebClientRequestException", exception);
-            kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
+            //kafkaMessageProducer.sendTransactionRequestMessageToExpectingPaymentsTopic(transactionKafkaRequest);
             throw new BankServiceServerNotAvailableException();
         }
         return "Ticket bought successfully";
-
-        //dopisać walidację na to, aby nie dało się kupić biletu na wydarzenie z przeszłóści.
     }
 
     @Transactional

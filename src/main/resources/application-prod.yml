@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/EventManagementDB
+    username: postgres
+    password: ${POSTGRES_PASSWORD}
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
+
+  jackson:
+    property-naming-strategy: LOWER_CAMEL_CASE
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: marcinjavadev93@gmail.com
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+weather:
+  api:
+    base-url: https://api.weatherapi.com/v1/forecast.json
+    api-key: ${API_KEY}
+
+server:
+  servlet:
+    session:
+      timeout: 15m
+      cookie:
+        http-only: true
+        max-age: 15m
+        name: strict

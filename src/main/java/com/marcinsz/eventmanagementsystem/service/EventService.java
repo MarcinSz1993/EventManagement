@@ -34,7 +34,6 @@ import java.util.List;
 public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final KafkaMessageProducer kafkaMessageProducer;
     private final JwtService jwtService;
 
     @Transactional
@@ -96,26 +95,6 @@ public class EventService {
                 joinedEvents.isLast()
         );
     }
-
-    public PageResponse<EventDto> getAllJoinedEvents(int page, int size, Authentication connectedUser) {
-        User user = (User) connectedUser.getPrincipal();
-        Pageable pageable = PageRequest.of(page, size, Sort.by("eventDate").descending());
-        Page<Event> joinedEvents = eventRepository.findFullAndActiveEventsJoinedByUser(user.getId(), pageable);
-        List<EventDto> joinedEventsDtoList = joinedEvents.getContent().stream()
-                .map(EventMapper::convertEventToEventDto)
-                .toList();
-
-        return new PageResponse<>(
-                joinedEventsDtoList,
-                joinedEvents.getNumber(),
-                joinedEvents.getSize(),
-                joinedEvents.getNumberOfElements(),
-                joinedEvents.getTotalPages(),
-                joinedEvents.isFirst(),
-                joinedEvents.isLast()
-        );
-    }
-
     @CacheEvict(cacheNames = {"allEvents","organizerEvents"}, allEntries = true)
     @Transactional
     public EventDto createEvent(CreateEventRequest createEventRequest, User user) {
@@ -125,9 +104,7 @@ public class EventService {
         Event event = EventMapper.convertCreateEventRequestToEvent(createEventRequest);
         event.setOrganizer(user);
         eventRepository.save(event);
-        EventDto eventDto = EventMapper.convertCreateEventRequestToEventDto(createEventRequest, user, event.getId());
-        kafkaMessageProducer.sendCreatedEventMessageToAllEventsTopic(eventDto);
-        return eventDto;
+        return EventMapper.convertCreateEventRequestToEventDto(createEventRequest, user, event.getId());
     }
 
     public EventDto getEventById(Long eventId) {
@@ -287,8 +264,6 @@ public class EventService {
 
         EventDto eventDto = EventMapper.convertEventToEventDto(eventToDelete);
         eventDto.setEventStatus(EventStatus.CANCELLED);
-        kafkaMessageProducer.sendCancelledEventMessageToCancellationTopic(eventDto);
-
         return eventToDelete.getEventName();
     }
 
