@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DATABASE_URL}
+    url: jdbc:postgresql://dpg-cukveat6l47c73eenl00-a.frankfurt-postgres.render.com/eventmanagementdb_s9a5
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
