@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://dpg-cukveat6l47c73eenl00-a.frankfurt-postgres.render.com/eventmanagementdb_s9a5
+    url: jdbc:postgresql://marcinsz1993:OFdwIhmYZcKlDdoqbysGfruJUm5U81yn@dpg-culieedds78s73bsbsug-a.frankfurt-postgres.render.com/eventmanagementdb_b2wo
     username: marcinsz1993
-    password: 0GzLIU89v1mkqe6xXPDrSSR68KoqnkrE
+    password: OFdwIhmYZcKlDdoqbysGfruJUm5U81yn
 
 
   liquibase:
