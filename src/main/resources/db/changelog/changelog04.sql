@@ -2,7 +2,7 @@
 
 --changeset MarcinSz1993:7
 
-create table if not exists review
+create table review
 (
     id       bigserial  not null
         primary key,
@@ -16,7 +16,7 @@ create table if not exists review
             references users
 );
 
-create table if not exists ticket
+create table ticket
 (
     id         bigserial  not null
         primary key,

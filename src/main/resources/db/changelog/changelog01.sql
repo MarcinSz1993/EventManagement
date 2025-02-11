@@ -2,7 +2,7 @@
 
 --changeset MarcinSz1993:1
 
-create table if not exists app_user
+create table app_user
 (
     birth_date     date,
     id             bigserial
@@ -24,7 +24,7 @@ create table if not exists app_user
 
 --changeset MarcinSz1993:2
 
-create table if not exists event
+create table event
 (
     event_date        date,
     max_attendees     integer          not null,
@@ -47,7 +47,7 @@ create table if not exists event
 );
 
 --changeset MarcinSz1993:3
-create table if not exists participants_events
+create table participants_events
 (
     event_id bigint not null
         constraint fk33x5do29tl4e7wop9yror0uck

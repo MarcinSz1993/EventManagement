@@ -1,7 +1,7 @@
 --liquibase formatted sql
 --changeset MarcinSz1993:16
 
-create table if not exists reset_token
+create table reset_token
 (
     id          bigserial
         primary key,
