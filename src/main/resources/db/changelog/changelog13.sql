@@ -13,6 +13,3 @@ create table reset_token
         constraint fk4vxwjrcj8j479hf5iehw6qnaa
             references users
 );
-
-alter table reset_token
-    owner to postgres;
