@@ -37,6 +37,7 @@ public class EventService {
     private final JwtService jwtService;
 
     @Transactional
+    @CacheEvict(cacheNames = {"allEvents","organizerEvents"}, allEntries = true)
     public String leaveEvent(Long eventId, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
         Event eventUserWantsToLeave = eventRepository.findByIdAndUserId(eventId, user.getId())
@@ -213,19 +214,19 @@ public class EventService {
 
         User user = userRepository.findByEmail(joinEventRequest.getEmail()).orElseThrow(() -> UserNotFoundException.forEmail(joinEventRequest.email));
         if (user.getId().equals(foundEvent.getOrganizer().getId())) {
-            throw new IllegalArgumentException("You cannot join your own event!");
+            throw new IllegalStateException("You cannot join your own event!");
         }
         UserMapper.convertUserToUserDto(user);
         if (foundEvent.getEventStatus().equals(EventStatus.FULL)) {
-            throw new IllegalArgumentException("You cannot join to the event because this is full.");
+            throw new IllegalStateException("You cannot join to the event because this is full.");
         } else if (foundEvent.getEventStatus().equals(EventStatus.CANCELLED)) {
-            throw new IllegalArgumentException("You cannot join to the event because this event has been cancelled.");
+            throw new IllegalStateException("You cannot join to the event because this event has been cancelled.");
         } else if (foundEvent.getEventStatus().equals(EventStatus.COMPLETED)) {
-            throw new IllegalArgumentException("You can't join because this event has been finished.");
+            throw new IllegalStateException("You can't join because this event has been finished.");
         } else if (foundEvent.getParticipants().contains(user)) {
-            throw new IllegalArgumentException("You already joined to this event!");
+            throw new IllegalStateException("You already joined to this event!");
         } else if (!isUserAdult(user.getBirthDate()) && foundEvent.getEventTarget().equals(EventTarget.ADULTS_ONLY)) {
-            throw new IllegalArgumentException("You are too young to join this event!");
+            throw new IllegalStateException("You are too young to join this event!");
         }
 
         foundEvent.getParticipants().add(user);

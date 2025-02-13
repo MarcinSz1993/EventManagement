@@ -82,7 +82,7 @@ class EventControllerTest {
 
         Mockito.doThrow(new IllegalArgumentException("You can use your email only!")).when(eventService).joinEvent(joinEventRequest, eventName, token);
 
-        ResponseEntity<String> response = eventController.joinEvent(joinEventRequest, eventName, token);
+        ResponseEntity<JoinEventResponse> response = eventController.joinEvent(joinEventRequest, eventName, token);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(response.getBody()).isEqualTo("You can use your email only!");
@@ -100,7 +100,7 @@ class EventControllerTest {
 
         Mockito.doThrow(new IllegalArgumentException("You cannot join to the event because this event has been cancelled.")).when(eventService).joinEvent(joinEventRequest, eventName, token);
 
-        ResponseEntity<String> response = eventController.joinEvent(joinEventRequest, eventName, token);
+        ResponseEntity<JoinEventResponse> response = eventController.joinEvent(joinEventRequest, eventName, token);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(response.getBody()).isEqualTo("You cannot join to the event because this event has been cancelled.");
@@ -117,7 +117,7 @@ class EventControllerTest {
 
         Mockito.doThrow(new IllegalArgumentException("Sorry, this event is full.")).when(eventService).joinEvent(joinEventRequest, eventName, token);
 
-        ResponseEntity<String> response = eventController.joinEvent(joinEventRequest, eventName, token);
+        ResponseEntity<JoinEventResponse> response = eventController.joinEvent(joinEventRequest, eventName, token);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(response.getBody()).isEqualTo("Sorry, this event is full.");
@@ -134,7 +134,7 @@ class EventControllerTest {
 
         Mockito.doThrow(new IllegalArgumentException("You are too young to join this event!")).when(eventService).joinEvent(joinEventRequest, eventName, token);
 
-        ResponseEntity<String> response = eventController.joinEvent(joinEventRequest, eventName, token);
+        ResponseEntity<JoinEventResponse> response = eventController.joinEvent(joinEventRequest, eventName, token);
 
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(response.getBody()).isEqualTo("You are too young to join this event!");
@@ -151,7 +151,7 @@ class EventControllerTest {
 
         Mockito.doThrow(new IllegalArgumentException("You already joined to this event!")).when(eventService).joinEvent(joinEventRequest, eventName, token);
 
-        ResponseEntity<String> response = eventController.joinEvent(joinEventRequest, eventName, token);
+        ResponseEntity<JoinEventResponse> response = eventController.joinEvent(joinEventRequest, eventName, token);
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         Assertions.assertThat(response.getBody()).isEqualTo("You already joined to this event!");
 
@@ -167,7 +167,7 @@ class EventControllerTest {
 
         Mockito.doNothing().when(eventService).joinEvent(joinEventRequest, eventName, token);
 
-        ResponseEntity<String> response = eventController.joinEvent(joinEventRequest, eventName, token);
+        ResponseEntity<JoinEventResponse> response = eventController.joinEvent(joinEventRequest, eventName, token);
 
         Assertions.assertThat(response.getStatusCode().value()).isEqualTo(200);
         Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

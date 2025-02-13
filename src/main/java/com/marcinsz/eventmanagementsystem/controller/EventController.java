@@ -2,10 +2,7 @@ package com.marcinsz.eventmanagementsystem.controller;
 
 import com.marcinsz.eventmanagementsystem.dto.EventDto;
 import com.marcinsz.eventmanagementsystem.exception.UserNotFoundException;
-import com.marcinsz.eventmanagementsystem.model.DeleteEventResponse;
-import com.marcinsz.eventmanagementsystem.model.LeaveEventResponse;
-import com.marcinsz.eventmanagementsystem.model.PageResponse;
-import com.marcinsz.eventmanagementsystem.model.User;
+import com.marcinsz.eventmanagementsystem.model.*;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
@@ -117,18 +114,16 @@ public class EventController {
     }
 
     @PutMapping("/join")
-    public ResponseEntity<String> joinEvent(
+    public ResponseEntity<JoinEventResponse> joinEvent(
             @RequestBody @Valid JoinEventRequest joinEventRequest,
             @RequestParam String eventName,
             @RequestHeader("Authorization") String token
     ) {
-
-        try {
-            eventService.joinEvent(joinEventRequest, eventName, token);
-            return ResponseEntity.ok(String.format("You joined to the event %s.", eventName.toUpperCase()));
-        } catch (IllegalArgumentException exception) {
-            return ResponseEntity.badRequest().body(exception.getMessage());
-        }
+        eventService.joinEvent(joinEventRequest, eventName, token);
+        return ResponseEntity.ok().body(JoinEventResponse.builder()
+                        .message("You successfully joined the event " + eventName)
+                        .statusCode(HttpStatus.OK.value())
+                .build());
     }
 
     @DeleteMapping
