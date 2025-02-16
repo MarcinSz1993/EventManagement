@@ -14,10 +14,16 @@ import java.time.LocalDate;
 public class CreateEventRequest {
     @Column(unique = true)
     @NotBlank(message = "Event name is required")
+    @NotEmpty(message = "Event name cannot be empty!")
+    @Max(value = 25,message = "Maximum length is 25 characters!")
     private String eventName;
     @NotBlank(message = "You must describe your event")
+    @NotEmpty(message = "Description cannot be empty!")
+    @Max(value = 500, message = "Maximum length is 500 characters!")
     private String eventDescription;
     @NotBlank(message = "Location is required")
+    @Max(value = 15,message = "Max length is 15 characters!")
+    @NotEmpty(message ="Location cannot be empty!")
     private String location;
     @NotNull(message = "Max attendees is required")
     @Positive(message = "A number must be greater than 0")
