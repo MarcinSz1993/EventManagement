@@ -120,6 +120,7 @@ public class SecurityConfig {
                 "POST",
                 "DELETE",
                 "PUT",
+                "OPTIONS",
                 "PATCH"
         ));
         source.registerCorsConfiguration("/**",config);
