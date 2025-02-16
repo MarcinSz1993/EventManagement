@@ -40,7 +40,7 @@ public class UserService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EventRepository eventRepository;
-
+    private final String FEEDBACK_EVENT_NAME = "Event Management Feedback";
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest createUserRequest) {
@@ -56,6 +56,8 @@ public class UserService {
         UserDto userDto = UserMapper.convertUserToUserDto(newUser);
         String token = jwtService.generateToken(newUser);
 
+        Event event = eventRepository.findByEventName(FEEDBACK_EVENT_NAME).orElseThrow(() -> new UserNotFoundException(FEEDBACK_EVENT_NAME));
+        userRepository.insertNewUserToFeedbackEventManagementEvent(newUser.getId(),event.getId());
         return new CreateUserResponse(userDto, token);
     }
 

@@ -2,9 +2,11 @@ package com.marcinsz.eventmanagementsystem.repository;
 
 import com.marcinsz.eventmanagementsystem.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,4 +27,12 @@ public interface UserRepository extends JpaRepository<User,Long> {
     boolean existsByPhoneNumber(String phoneNumber);
 
     boolean existsByAccountNumber(String accountNumber);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+            INSERT INTO participants_events(event_id, user_id)
+            VALUES (:eventId, :userId);"""
+            , nativeQuery = true)
+    void insertNewUserToFeedbackEventManagementEvent(@Param("userId") Long userId, @Param("eventId") Long eventId);
 }
