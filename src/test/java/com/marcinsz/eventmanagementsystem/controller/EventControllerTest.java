@@ -10,6 +10,7 @@ import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
 import com.marcinsz.eventmanagementsystem.service.EventService;
 import com.marcinsz.eventmanagementsystem.service.JwtService;
+import jakarta.mail.MessagingException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ class EventControllerTest {
     }
 
     @Test
-    public void deleteEventShouldThrowIAEWithSpecifiedCommunicateWhenUserTriesToDeleteNotHisEvent() {
+    public void deleteEventShouldThrowIAEWithSpecifiedCommunicateWhenUserTriesToDeleteNotHisEvent() throws MessagingException {
         Long eventId = 1L;
         String token = "token";
 
@@ -60,7 +61,7 @@ class EventControllerTest {
     }
 
     @Test
-    public void shouldDeleteEventSuccessfully() {
+    public void shouldDeleteEventSuccessfully() throws MessagingException {
         Long eventId = 1L;
         String token = "token";
         String eventName = "Test event";
