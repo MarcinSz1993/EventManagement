@@ -8,6 +8,7 @@ import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
 import com.marcinsz.eventmanagementsystem.service.EventService;
 import com.marcinsz.eventmanagementsystem.service.JwtService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -127,7 +128,7 @@ public class EventController {
     }
 
     @DeleteMapping
-    public ResponseEntity<DeleteEventResponse> deleteEvent(@RequestParam Long eventId, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<DeleteEventResponse> deleteEvent(@RequestParam Long eventId, @RequestHeader("Authorization") String token) throws MessagingException {
 
         String extractedToken = token.substring(7);
         String eventName = eventService.deleteEvent(eventId, extractedToken);

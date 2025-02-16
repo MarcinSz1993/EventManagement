@@ -10,6 +10,8 @@ import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final NotificationService notificationService;
 
     @Transactional
     @CacheEvict(cacheNames = {"allEvents","organizerEvents"}, allEntries = true)
@@ -240,7 +243,7 @@ public class EventService {
     @CacheEvict(cacheNames = {"allEvents","organizerEvents"}, allEntries = true)
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public String deleteEvent(Long eventId, String token) {
+    public String deleteEvent(Long eventId, String token) throws MessagingException {
         Event eventToDelete = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
 
@@ -265,7 +268,9 @@ public class EventService {
 
         EventDto eventDto = EventMapper.convertEventToEventDto(eventToDelete);
         eventDto.setEventStatus(EventStatus.CANCELLED);
+        notificationService.sendNotification(eventDto);
         return eventToDelete.getEventName();
+
     }
 
     @CacheEvict(value = {"allEvents","organizerEvents"},allEntries = true)
