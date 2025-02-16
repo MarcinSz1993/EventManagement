@@ -13,6 +13,7 @@ import com.marcinsz.eventmanagementsystem.repository.UserRepository;
 import com.marcinsz.eventmanagementsystem.request.CreateEventRequest;
 import com.marcinsz.eventmanagementsystem.request.JoinEventRequest;
 import com.marcinsz.eventmanagementsystem.request.UpdateEventRequest;
+import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -430,7 +431,7 @@ class EventServiceTest {
     }
 
     @Test
-    public void shouldSuccessfullyDeleteEvent() {
+    public void shouldSuccessfullyDeleteEvent() throws MessagingException {
         Long eventId = 1L;
         String token = "token";
         User user = createTestUser();
