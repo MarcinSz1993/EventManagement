@@ -4,6 +4,7 @@ import com.marcinsz.eventmanagementsystem.model.EventTarget;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
 @Getter
@@ -15,14 +16,14 @@ public class CreateEventRequest {
     @Column(unique = true)
     @NotBlank(message = "Event name is required")
     @NotEmpty(message = "Event name cannot be empty!")
-    @Max(value = 25,message = "Maximum length is 25 characters!")
+    @Length(max = 25, message = "Max length of event name is 25 characters!")
     private String eventName;
     @NotBlank(message = "You must describe your event")
     @NotEmpty(message = "Description cannot be empty!")
-    @Max(value = 500, message = "Maximum length is 500 characters!")
+    @Length(max = 500, message = "Max length of description is 500 characters!")
     private String eventDescription;
     @NotBlank(message = "Location is required")
-    @Max(value = 15,message = "Max length is 15 characters!")
+    @Length(max = 15, message = "Max length of location is 15 characters!")
     @NotEmpty(message ="Location cannot be empty!")
     private String location;
     @NotNull(message = "Max attendees is required")
