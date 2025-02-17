@@ -2,8 +2,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/EventManagementDB
-    username: postgres
-    password: ${PG_PASS:qwerty}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   liquibase:
@@ -51,7 +51,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: marcinjavadev93@gmail.com
-    password: utaq xtbb gggf zorb
+    password: ${SMTP_PASSWORD}
     properties:
       mail:
         smtp:
@@ -61,5 +61,5 @@ spring:
 
 weather:
   api:
-    apiKey: 80748648b31e475ba43112900240208
+    apiKey: ${API_KEY}
     baseUrl: https://api.weatherapi.com/v1/forecast.json
