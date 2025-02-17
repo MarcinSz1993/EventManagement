@@ -46,17 +46,16 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/api/**").permitAll();
+                    //registry.requestMatchers("/api/**").permitAll();
+                    registry.requestMatchers("/api/users").permitAll();
                     registry.requestMatchers("/api/events/all").permitAll();
                     registry.requestMatchers("/api/users/login/**").permitAll();
-                    registry.requestMatchers("/api/events/joined/**").authenticated();
+                    //registry.requestMatchers("/api/events/joined/**").authenticated();
                     registry.requestMatchers("/users/preferences").hasRole("USER");
                     registry.requestMatchers("/events").hasAnyRole("USER", "ADMIN");
                     registry.requestMatchers("/payments/").hasAnyRole("USER", "ADMIN");
 
                     registry.requestMatchers("/swagger-ui/**").permitAll();
-                    registry.requestMatchers("/v3/api-docs/**").permitAll();
-                    registry.requestMatchers("/h2-console/**").permitAll();
                     registry.anyRequest().authenticated();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
